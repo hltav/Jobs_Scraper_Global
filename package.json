@@ -1,0 +1,32 @@
+{
+  "name": "vagas-full",
+  "version": "1.0.0",
+  "description": "Bot automatizado para buscar vagas de emprego no LinkedIn focado no mercado brasileiro de tecnologia",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "linkedin",
+    "jobs",
+    "scraping",
+    "puppeteer",
+    "vagas",
+    "emprego",
+    "brasil",
+    "tecnologia",
+    "automation"
+  ],
+  "author": "Bene Tesla Dev",
+  "license": "ISC",
+  "dependencies": {
+    "puppeteer": "^24.22.3",
+    "xlsx": "^0.18.5"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}
