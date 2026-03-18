@@ -1,24 +1,24 @@
-# Jobs Scraper Global
+# Vagas LinkedIn Brasil (Remoto)
 
-Bot de automacao para buscar vagas de tecnologia no LinkedIn em escala global e exportar os resultados para Excel.
+Bot de automacao para buscar vagas no LinkedIn com foco em Brasil remoto e exportar os resultados em Excel e PDF.
 
-## O que mudou
+## Comportamento atual
 
-- Busca padrao agora cobre vagas no mundo todo (location=Worldwide)
-- Projeto refatorado para uma arquitetura modular e manutencao facilitada
-- Configuracao por variaveis de ambiente para localizacao, idioma, keywords e comportamento do navegador
-- Tratamento de erro centralizado e logs com timestamp
-- Deduplicacao de vagas antes da exportacao
+- Escopo geografico: Brasil (geoId padrao `106057199`)
+- Modalidade: remoto apenas (`f_WT=2`)
+- Tipos de contrato padrao: PJ e CLT (`f_JT=C,F`)
+- Exportacao em dois formatos: `.xlsx` e `.pdf`
+- Deduplicacao por link (ou por titulo + empresa + local quando o link nao existe)
 
-## Arquitetura
+## Estrutura do projeto
 
-- index.js: entrypoint enxuto e tratamento de falhas
-- src/config.js: leitura e validacao de configuracoes
-- src/browser.js: descoberta de Chrome/Edge e abertura do Puppeteer
-- src/linkedinScraper.js: logica de busca e extracao no LinkedIn
-- src/exporter.js: exportacao para Excel
-- src/logger.js: logs padronizados
-- src/app.js: orquestracao do fluxo completo
+- `index.js`: entrypoint e tratamento de falhas
+- `src/app.js`: fluxo principal (coleta e exportacao)
+- `src/config.js`: leitura das variaveis de ambiente
+- `src/browser.js`: inicializacao do navegador para o Puppeteer
+- `src/linkedinScraper.js`: montagem da URL e extracao das vagas
+- `src/exporter.js`: geracao de Excel e PDF
+- `src/logger.js`: logs padronizados
 
 ## Requisitos
 
@@ -29,66 +29,77 @@ Bot de automacao para buscar vagas de tecnologia no LinkedIn em escala global e 
 ## Instalacao
 
 1. Clone o projeto
-2. Execute npm install
+2. Rode `npm install`
 
 ## Execucao
 
-- Producao: npm start
-- Desenvolvimento: npm run dev
-- Hot reload: npm run run
+- Producao: `npm start`
+- Desenvolvimento: `npm run dev`
+- Hot reload: `npm run run`
 
-## Configuracao por ambiente
+## Variaveis de ambiente
 
-Variaveis opcionais:
+Todas sao opcionais.
 
-- SEARCH_LOCATION: local da busca (padrao: Worldwide)
-- SEARCH_LANGUAGE: idioma da busca (padrao: en)
-- SEARCH_KEYWORDS: lista separada por virgula
-- HEADLESS: true ou false (padrao: false)
-- WAIT_BETWEEN_SEARCHES_MS: espera entre buscas (padrao: 5000)
-- PAGE_TIMEOUT_MS: timeout de seletores (padrao: 10000)
-- VIEWPORT_WIDTH: largura do navegador (padrao: 1280)
-- VIEWPORT_HEIGHT: altura do navegador (padrao: 800)
-- OUTPUT_FILE: nome do arquivo de saida (padrao: vagas_linkedin.xlsx)
-- CHROME_PATH: caminho do executavel do navegador
+- `HEADLESS` (padrao: `false`)
+- `WAIT_BETWEEN_SEARCHES_MS` (padrao: `5000`)
+- `PAGE_TIMEOUT_MS` (padrao: `10000`)
+- `VIEWPORT_WIDTH` (padrao: `1280`)
+- `VIEWPORT_HEIGHT` (padrao: `800`)
+- `OUTPUT_FILE` (padrao: `vagas_linkedin.xlsx`)
+- `PDF_FILE` (padrao: `vagas_linkedin.pdf`)
+- `SEARCH_LOCATION` (padrao: `Brasil`)
+- `SEARCH_GEO_ID` (padrao: `106057199`)
+- `SEARCH_LANGUAGE` (padrao: `pt`)
+- `JOB_TYPES` (padrao: `C,F`)  
+	Valores comuns: `C` (PJ), `F` (CLT), `C,F` (ambos)
+- `SEARCH_KEYWORDS` (lista separada por virgula)
+- `CHROME_PATH` (caminho do executavel do navegador)
 
-Exemplo no Windows cmd:
+Exemplo no Windows cmd (Brasil remoto, PJ+CLT):
 
-set SEARCH_LOCATION=Worldwide&& set SEARCH_LANGUAGE=en&& set HEADLESS=true&& npm start
+```bat
+set SEARCH_GEO_ID=106057199&& set JOB_TYPES=C,F&& set HEADLESS=true&& npm start
+```
 
-Exemplo com keywords customizadas:
+Exemplo com palavras-chave personalizadas:
 
-set SEARCH_KEYWORDS=NodeJS,ReactJS,Python,DevOps&& npm start
+```bat
+set SEARCH_KEYWORDS=UX Designer,UI Designer,Product Manager,Product Owner&& npm start
+```
 
 ## Saida
 
-Planilha Excel com as colunas:
+Arquivos gerados por padrao:
 
-- palavra
-- titulo
-- empresa
-- local
-- link
+- `vagas_linkedin.xlsx`
+- `vagas_linkedin.pdf`
 
-Arquivo padrao: vagas_linkedin.xlsx
+Colunas exportadas:
 
-## Exemplo de planilha:
+- `palavra`
+- `titulo`
+- `empresa`
+- `local`
+- `link`
 
-<img width="1901" height="599" alt="Image" src="https://github.com/user-attachments/assets/7c1c525f-1abb-438c-a398-3a44c23727fa" />
+No PDF, os links sao normalizados para uma versao curta do LinkedIn quando possivel, reduzindo risco de truncamento.
 
 ## Troubleshooting
 
 Chrome/Edge nao encontrado:
 
-- Instale Chrome ou Edge
-- Ou informe CHROME_PATH manualmente
+- Instale Google Chrome ou Microsoft Edge
+- Ou informe `CHROME_PATH` manualmente
 
-Exemplo:
+Exemplo no Windows cmd:
 
+```bat
 set CHROME_PATH=C:\Program Files\Google\Chrome\Application\chrome.exe&& npm start
+```
 
 ## Avisos
 
 - Respeite os termos de uso do LinkedIn
 - Use o scraper de forma etica e responsavel
-- A estrutura de HTML do LinkedIn pode mudar e exigir ajuste de seletores
+- O HTML do LinkedIn pode mudar e exigir ajuste de seletores
