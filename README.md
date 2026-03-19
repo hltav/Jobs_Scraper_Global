@@ -35,6 +35,54 @@ Bot de automacao para buscar vagas no LinkedIn com foco em Brasil remoto e expor
 - Desenvolvimento: `npm run dev`
 - Hot reload: `npm run run`
 
+## Fluxo de branches (obrigatorio)
+
+Este repositorio usa o seguinte fluxo:
+
+- `master`: codigo estavel (base principal)
+- `develop`: branch de integracao
+- `feature/*`: branch temporaria de trabalho
+
+Regra principal para evitar confusao:
+
+- A `feature` sempre nasce da `master`
+- Ao finalizar, a `feature` deve abrir PR para `develop`
+- `master` nao deve receber trabalho direto de feature no dia a dia
+
+### Passo a passo
+
+1. Atualize sua `master` local com o remoto
+2. Crie sua `feature` a partir da `master`
+3. Trabalhe localmente e faca commits na `feature`
+4. Publique a `feature` no remoto
+5. Abra Pull Request com destino em `develop`
+
+Exemplo:
+
+```bash
+git checkout master
+git pull origin master
+
+git checkout -b feature/nome-da-feature
+
+# faz alteracoes...
+git add .
+git commit -m "feat: descreve a feature"
+
+git push -u origin feature/nome-da-feature
+```
+
+No GitHub, abra o PR assim:
+
+- `base`: `develop`
+- `compare`: `feature/nome-da-feature`
+
+### Importante
+
+- Nao use `develop` como base para criar `feature` neste projeto
+- Nao aponte PR de `feature` direto para `master`
+- `master` deve ser atualizada a partir de `develop` apenas no momento de release
+
 ## Variaveis de ambiente
 
 Todas sao opcionais.
