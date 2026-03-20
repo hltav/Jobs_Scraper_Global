@@ -1,9 +1,11 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, type SetStateAction } from "react";
 import { JobsFiltersCard } from "@/components/JobsFiltersCard";
 import { JobsHeaderCard } from "@/components/JobsHeaderCard";
 import { JobsTableCard } from "@/components/JobsTableCard";
-import { fetchJobFiles, fetchJobsByFile } from "@/services/jobsService";
-import type { Job, JobFile, JobsMeta } from "@/types/jobs";
+import { useJobsData } from "@/hooks/useJobsData";
+import { useJobsFiltering } from "@/hooks/useJobsFiltering";
+import { useJobsPagination } from "@/hooks/useJobsPagination";
+import type { JobsMeta } from "@/types/jobs";
 
 function formatDate(timestamp: JobsMeta["modifiedAt"]): string {
   if (!timestamp) {
@@ -13,100 +15,46 @@ function formatDate(timestamp: JobsMeta["modifiedAt"]): string {
 }
 
 function App() {
-  const [files, setFiles] = useState<JobFile[]>([]);
-  const [selectedFile, setSelectedFile] = useState("");
-  const [search, setSearch] = useState("");
-  const [keywordFilter, setKeywordFilter] = useState("all");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(25);
-  const [jobs, setJobs] = useState<Job[]>([]);
-  const [meta, setMeta] = useState<JobsMeta>({ file: "", modifiedAt: null, total: 0 });
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const { files, selectedFile, setSelectedFile, jobs, meta, loading, error, loadJobs } = useJobsData();
 
-  const keywords = useMemo(() => {
-    const values = Array.from(new Set(jobs.map((job) => String(job.palavra || "").trim()).filter(Boolean)));
-    return values.sort((a, b) => a.localeCompare(b));
-  }, [jobs]);
+  const { search, setSearch, keywordFilter, setKeywordFilter, keywords, filteredJobs } = useJobsFiltering(jobs);
 
-  const filteredJobs = useMemo(() => {
-    const term = search.trim().toLowerCase();
-
-    return jobs.filter((job) => {
-      const byKeyword = keywordFilter === "all" || String(job.palavra || "") === keywordFilter;
-      if (!byKeyword) {
-        return false;
-      }
-
-      if (!term) {
-        return true;
-      }
-
-      const text = [job.titulo, job.empresa, job.local, job.link, job.palavra]
-        .map((value) => String(value || "").toLowerCase())
-        .join(" ");
-
-      return text.includes(term);
+  const { currentPage, setCurrentPage, pageSize, setPageSize, resetPagination, totalPages, paginatedJobs } =
+    useJobsPagination({
+      filteredJobs,
     });
-  }, [jobs, search, keywordFilter]);
 
-  const totalPages = useMemo(() => {
-    return Math.max(1, Math.ceil(filteredJobs.length / pageSize));
-  }, [filteredJobs.length, pageSize]);
+  const handleSearchChange = useCallback(
+    (value: SetStateAction<string>) => {
+      setSearch((previous) => (typeof value === "function" ? value(previous) : value));
+      resetPagination();
+    },
+    [setSearch, resetPagination],
+  );
 
-  const paginatedJobs = useMemo(() => {
-    const start = (currentPage - 1) * pageSize;
-    return filteredJobs.slice(start, start + pageSize);
-  }, [filteredJobs, currentPage, pageSize]);
+  const handleKeywordFilterChange = useCallback(
+    (value: SetStateAction<string>) => {
+      setKeywordFilter((previous) => (typeof value === "function" ? value(previous) : value));
+      resetPagination();
+    },
+    [setKeywordFilter, resetPagination],
+  );
 
-  const loadJobs = useCallback(async (fileName: string) => {
-    setLoading(true);
-    setError("");
-    try {
-      const data = await fetchJobsByFile(fileName);
-      setJobs(data.jobs);
-      setMeta({
-        file: data.file,
-        modifiedAt: data.modifiedAt,
-        total: data.total,
-      });
-      setSelectedFile(data.file || fileName || "");
-    } catch (err: unknown) {
-      setJobs([]);
-      setMeta({ file: "", modifiedAt: null, total: 0 });
-      setError(err instanceof Error ? err.message : "Erro inesperado ao carregar vagas.");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const handleSelectedFileChange = useCallback(
+    (value: SetStateAction<string>) => {
+      setSelectedFile((previous) => (typeof value === "function" ? value(previous) : value));
+      resetPagination();
+    },
+    [setSelectedFile, resetPagination],
+  );
 
-  useEffect(() => {
-    async function initializeFiles() {
-      const foundFiles = await fetchJobFiles();
-      setFiles(foundFiles);
-      if (foundFiles[0]?.file) {
-        setSelectedFile(foundFiles[0].file);
-      }
-    }
-
-    initializeFiles().catch(() => {
-      setError("Nao foi possivel listar arquivos .xlsx da pasta output.");
-    });
-  }, []);
-
-  useEffect(() => {
-    if (selectedFile) {
-      loadJobs(selectedFile);
-    }
-  }, [selectedFile, loadJobs]);
-
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [search, keywordFilter, selectedFile, pageSize]);
-
-  useEffect(() => {
-    setCurrentPage((previous) => Math.min(previous, totalPages));
-  }, [totalPages]);
+  const handlePageSizeChange = useCallback(
+    (value: number) => {
+      setPageSize(value);
+      resetPagination();
+    },
+    [setPageSize, resetPagination],
+  );
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-background px-4 py-8 md:px-8">
@@ -117,12 +65,12 @@ function App() {
 
         <JobsFiltersCard
           search={search}
-          setSearch={setSearch}
+          setSearch={handleSearchChange}
           keywordFilter={keywordFilter}
-          setKeywordFilter={setKeywordFilter}
+          setKeywordFilter={handleKeywordFilterChange}
           keywords={keywords}
           selectedFile={selectedFile}
-          setSelectedFile={setSelectedFile}
+          setSelectedFile={handleSelectedFileChange}
           files={files}
           loading={loading}
           onRefresh={() => loadJobs(selectedFile)}
@@ -140,7 +88,7 @@ function App() {
           totalPages={totalPages}
           pageSize={pageSize}
           onPageChange={setCurrentPage}
-          onPageSizeChange={setPageSize}
+          onPageSizeChange={handlePageSizeChange}
         />
       </section>
     </main>
