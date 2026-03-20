@@ -1,0 +1,64 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { getConfig } from "../src/config.js";
+
+const CONFIG_ENV_KEYS = [
+  "HEADLESS",
+  "WAIT_BETWEEN_SEARCHES_MS",
+  "PAGE_TIMEOUT_MS",
+  "MAX_PAGES_PER_KEYWORD",
+  "VIEWPORT_WIDTH",
+  "VIEWPORT_HEIGHT",
+  "OUTPUT_FILE",
+  "PDF_FILE",
+  "SEARCH_LOCATION",
+  "SEARCH_GEO_ID",
+  "SEARCH_LANGUAGE",
+  "REMOTE_ONLY",
+  "JOB_TYPES",
+  "TIME_FILTER",
+  "SEARCH_KEYWORDS",
+];
+
+describe("getConfig", () => {
+  beforeEach(() => {
+    for (const key of CONFIG_ENV_KEYS) {
+      vi.stubEnv(key, undefined);
+    }
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it("usa caminhos padrao em output/ para Excel e PDF", () => {
+    const config = getConfig();
+    expect(config.outputFile).toBe("output/vagas_linkedin.xlsx");
+    expect(config.pdfFile).toBe("output/vagas_linkedin.pdf");
+  });
+
+  it("permite sobrescrever arquivos de saida via env", () => {
+    vi.stubEnv("OUTPUT_FILE", "custom/out.xlsx");
+    vi.stubEnv("PDF_FILE", "custom/out.pdf");
+    const config = getConfig();
+    expect(config.outputFile).toBe("custom/out.xlsx");
+    expect(config.pdfFile).toBe("custom/out.pdf");
+  });
+
+  it("parseia SEARCH_KEYWORDS em lista", () => {
+    vi.stubEnv("SEARCH_KEYWORDS", "UX Designer, Product Owner ");
+    const config = getConfig();
+    expect(config.keywords).toEqual(["UX Designer", "Product Owner"]);
+  });
+
+  it("rejeita TIME_FILTER invalido e usa fallback", () => {
+    vi.stubEnv("TIME_FILTER", "invalid");
+    const config = getConfig();
+    expect(config.timeFilter).toBe("r604800");
+  });
+
+  it("aceita TIME_FILTER no formato r + digitos", () => {
+    vi.stubEnv("TIME_FILTER", "r86400");
+    const config = getConfig();
+    expect(config.timeFilter).toBe("r86400");
+  });
+});

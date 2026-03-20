@@ -18,6 +18,30 @@ Bot de automacao para buscar vagas no LinkedIn com foco em Brasil remoto e expor
 - `src/linkedinScraper.js`: coleta HTTP, paginacao e extracao das vagas
 - `src/exporter.js`: geracao de Excel e PDF
 - `src/logger.js`: logs padronizados
+- `src/jobsApiApp.js`: monta as rotas da API Express (reutilizado nos testes)
+- `src/server.js`: entrypoint da API (`dotenv` + listen)
+- `test/`: testes automatizados (Vitest)
+
+## Testes e CI (validar antes do PR)
+
+O workflow [`.github/workflows/ci.yml`](.github/workflows/ci.yml) roda testes do backend, lint e build do frontend em PRs e em push para `master` e `develop`. No GitHub, ative *branch protection* com o check **CI / validate** obrigatorio se quiser bloquear merge com falha.
+
+**Com dependencias ja instaladas** (raiz + `frontend`):
+
+```bash
+npm run validate
+```
+
+**Espelho do que o CI faz** (reinstala com `npm ci` na raiz e no frontend — mais lento, util antes de abrir PR):
+
+```bash
+npm run validate:ci
+```
+
+Outros comandos:
+
+- `npm test` — apenas testes (Vitest)
+- `npm run test:watch` — Vitest em modo observacao
 
 ## Requisitos
 
@@ -187,8 +211,8 @@ Todas sao opcionais.
 - `WAIT_BETWEEN_SEARCHES_MS` (padrao: `5000`)
 - `PAGE_TIMEOUT_MS` (padrao: `10000`)
 - `MAX_PAGES_PER_KEYWORD` (padrao: `5`)
-- `OUTPUT_FILE` (padrao: `vagas_linkedin.xlsx`)
-- `PDF_FILE` (padrao: `vagas_linkedin.pdf`)
+- `OUTPUT_FILE` (padrao: `output/vagas_linkedin.xlsx`)
+- `PDF_FILE` (padrao: `output/vagas_linkedin.pdf`)
 - `SEARCH_LOCATION` (padrao: `Brasil`)
 - `SEARCH_GEO_ID` (padrao: `106057199`)
 - `SEARCH_LANGUAGE` (padrao: `pt`)
@@ -212,10 +236,10 @@ set SEARCH_KEYWORDS=UX Designer,UI Designer,Product Manager,Product Owner&& npm 
 
 ## Saida
 
-Arquivos gerados por padrao:
+Arquivos gerados por padrao (pasta `output/`):
 
-- `vagas_linkedin.xlsx`
-- `vagas_linkedin.pdf`
+- `output/vagas_linkedin.xlsx`
+- `output/vagas_linkedin.pdf`
 
 Colunas exportadas:
 
