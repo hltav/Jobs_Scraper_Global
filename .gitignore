@@ -2,7 +2,7 @@
 .DS_Store
 .env
 .vscode/
+/output/
 npm-debug.log
 yarn-error.log
 yarn-debug.log
-package-lock.json

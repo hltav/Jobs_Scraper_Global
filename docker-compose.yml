@@ -1,11 +1,43 @@
 services:
-  vagas-scraper:
+  api:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: vagas-full
+    container_name: vagas-api
+    command: ["node", "src/server.js"]
+    env_file:
+      - .env
+    environment:
+      - PORT=3001
+    volumes:
+      - ./output:/app/output
+    ports:
+      - "3001:3001"
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    container_name: vagas-frontend
+    environment:
+      - VITE_API_PROXY_TARGET=http://api:3001
+    ports:
+      - "5173:5173"
+    depends_on:
+      - api
+    restart: unless-stopped
+
+  scraper:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: vagas-scraper
+    command: ["node", "index.js"]
     env_file:
       - .env
     volumes:
       - ./output:/app/output
     restart: "no"
+    profiles:
+      - scraper

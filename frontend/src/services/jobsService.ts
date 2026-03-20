@@ -1,0 +1,50 @@
+import type { JobFile, JobsResponse } from "@/types/jobs";
+
+function buildError(message: unknown, fallback: string): Error {
+  return new Error(typeof message === "string" && message ? message : fallback);
+}
+
+function readMessage(payload: unknown): string | undefined {
+  if (payload && typeof payload === "object" && "message" in payload) {
+    const message = (payload as { message?: unknown }).message;
+    if (typeof message === "string") {
+      return message;
+    }
+  }
+  return undefined;
+}
+
+export async function fetchJobFiles(): Promise<JobFile[]> {
+  const response = await fetch("/api/jobs/files");
+  const payload = (await response.json()) as { files?: unknown } & Record<string, unknown>;
+
+  if (!response.ok) {
+    throw buildError(readMessage(payload), "Falha ao listar arquivos de vagas.");
+  }
+
+  if (!Array.isArray(payload.files)) {
+    return [];
+  }
+
+  return payload.files.filter(
+    (entry): entry is JobFile =>
+      !!entry && typeof entry === "object" && "file" in entry && typeof (entry as { file: unknown }).file === "string",
+  );
+}
+
+export async function fetchJobsByFile(fileName: string): Promise<JobsResponse> {
+  const suffix = fileName ? `?file=${encodeURIComponent(fileName)}` : "";
+  const response = await fetch(`/api/jobs${suffix}`);
+  const payload = (await response.json()) as Record<string, unknown>;
+
+  if (!response.ok) {
+    throw buildError(readMessage(payload), "Falha ao carregar vagas.");
+  }
+
+  return {
+    jobs: Array.isArray(payload.jobs) ? payload.jobs : [],
+    file: typeof payload.file === "string" ? payload.file : "",
+    modifiedAt: typeof payload.modifiedAt === "string" || typeof payload.modifiedAt === "number" ? payload.modifiedAt : null,
+    total: Number(payload.total || 0),
+  };
+}

@@ -1,3 +1,4 @@
+import "dotenv/config";
 import { run } from "./src/app.js";
 import { logError } from "./src/logger.js";
 
