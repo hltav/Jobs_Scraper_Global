@@ -35,6 +35,67 @@ Bot de automacao para buscar vagas no LinkedIn com foco em Brasil remoto e expor
 - Desenvolvimento: `npm run dev`
 - Hot reload: `npm run run`
 
+## Painel Frontend (React + Vite + Tailwind + shadcn)
+
+Foi adicionada uma interface web para visualizar as vagas do arquivo Excel gerado em `output`.
+
+### Como iniciar
+
+1. Gere/atualize o arquivo Excel normalmente com o scraper
+2. Suba a API que le o arquivo mais recente da pasta `output`:
+
+```bash
+npm run api
+```
+
+3. Em outro terminal, suba o frontend:
+
+```bash
+npm run frontend:dev
+```
+
+4. Abra no navegador:
+
+```text
+http://localhost:5173
+```
+
+### Scripts adicionados
+
+- `npm run api`: inicia API em `http://localhost:3001`
+- `npm run frontend:dev`: inicia Vite em modo desenvolvimento
+- `npm run frontend:build`: gera build de producao do frontend
+- `npm run frontend:preview`: serve build do frontend localmente
+
+### Endpoints da API
+
+- `GET /api/health`: health check
+- `GET /api/jobs/files`: lista arquivos `.xlsx` encontrados em `output`
+- `GET /api/jobs`: retorna vagas do arquivo mais recente
+- `GET /api/jobs?file=nome.xlsx`: retorna vagas de um arquivo especifico
+
+## Docker (servicos separados)
+
+Agora o Docker foi separado em 3 servicos:
+
+- `api`: backend HTTP para leitura do XLSX
+- `frontend`: dashboard React/Vite
+- `scraper`: execucao do scraping (nao sobe por padrao)
+
+### Subir dashboard + API (sem scraping automatico)
+
+```bash
+docker compose up --build
+```
+
+### Executar scraping manualmente
+
+```bash
+docker compose --profile scraper run --rm scraper
+```
+
+Com isso, `docker compose up` nao dispara mais a coleta automaticamente.
+
 ## Fluxo de branches (obrigatorio)
 
 Este repositorio usa o seguinte fluxo:
