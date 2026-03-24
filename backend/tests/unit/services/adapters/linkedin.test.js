@@ -1,5 +1,5 @@
 import axios from "axios";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   logInfoMock: vi.fn(),
@@ -7,12 +7,12 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock("axios");
-vi.mock("../../../src/logger.js", () => ({
+vi.mock("../../../../src/logger.js", () => ({
   logInfo: mocks.logInfoMock,
   logWarn: mocks.logWarnMock,
 }));
 
-import { linkedinAdapter } from "../../../src/adapters/linkedin.js";
+import { linkedinAdapter } from "../../../../src/adapters/linkedin.js";
 
 const BASE_CONFIG = {
   searchLocation: "Brasil",
@@ -26,6 +26,10 @@ const BASE_CONFIG = {
 };
 
 describe("linkedinAdapter", () => {
+  beforeEach(() => {
+    vi.resetAllMocks();
+  });
+
   it("faz parse e remove vagas duplicadas", async () => {
     axios.get.mockResolvedValue({
       data: `

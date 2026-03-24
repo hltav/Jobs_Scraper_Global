@@ -1,6 +1,6 @@
 import axios from "axios";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { createGreenhouseAdapter } from "../../../src/adapters/greenhouse.js";
+import { createGreenhouseAdapter } from "../../../../src/adapters/greenhouse.js";
 
 vi.mock("axios");
 

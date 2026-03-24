@@ -1,6 +1,6 @@
 import axios from "axios";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { theMuseAdapter } from "../../../src/adapters/theMuse.js";
+import { theMuseAdapter } from "../../../../src/adapters/theMuse.js";
 
 vi.mock("axios");
 

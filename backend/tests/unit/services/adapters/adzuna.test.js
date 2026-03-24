@@ -1,6 +1,6 @@
 import axios from "axios";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { createAdzunaAdapter } from "../../../src/adapters/adzuna.js";
+import { createAdzunaAdapter } from "../../../../src/adapters/adzuna.js";
 
 vi.mock("axios");
 

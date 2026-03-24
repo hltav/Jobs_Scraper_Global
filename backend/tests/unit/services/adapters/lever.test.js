@@ -1,6 +1,6 @@
 import axios from "axios";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { createLeverAdapter } from "../../../src/adapters/lever.js";
+import { createLeverAdapter } from "../../../../src/adapters/lever.js";
 
 vi.mock("axios");
 
