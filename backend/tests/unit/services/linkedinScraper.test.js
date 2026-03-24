@@ -12,7 +12,7 @@ vi.mock("../../../src/logger.js", () => ({
   logWarn: mocks.logWarnMock,
 }));
 
-import { scrapeLinkedinJobs } from "../../../src/linkedinScraper.js";
+import { linkedinAdapter } from "../../../src/adapters/linkedin.js";
 
 const BASE_CONFIG = {
   searchLocation: "Brasil",
@@ -25,7 +25,7 @@ const BASE_CONFIG = {
   maxPagesPerKeyword: 1,
 };
 
-describe("scrapeLinkedinJobs", () => {
+describe("linkedinAdapter", () => {
   it("faz parse e remove vagas duplicadas", async () => {
     axios.get.mockResolvedValue({
       data: `
@@ -44,16 +44,21 @@ describe("scrapeLinkedinJobs", () => {
       `,
     });
 
-    const jobs = await scrapeLinkedinJobs({ ...BASE_CONFIG, keywords: ["React"] });
+    const jobs = await linkedinAdapter.search("React", BASE_CONFIG);
 
     expect(jobs).toHaveLength(1);
-    expect(jobs[0]).toMatchObject({ palavra: "React", titulo: "Dev 1", empresa: "ACME" });
+    expect(jobs[0]).toMatchObject({
+      source: "linkedin",
+      keyword: "React",
+      titulo: "Dev 1",
+      empresa: "ACME",
+    });
   });
 
   it("trata erro HTTP e retorna lista vazia", async () => {
     axios.get.mockRejectedValue(new Error("falha"));
 
-    const jobs = await scrapeLinkedinJobs({ ...BASE_CONFIG, keywords: ["Node"] });
+    const jobs = await linkedinAdapter.search("Node", BASE_CONFIG);
 
     expect(jobs).toEqual([]);
     expect(mocks.logWarnMock).toHaveBeenCalled();
