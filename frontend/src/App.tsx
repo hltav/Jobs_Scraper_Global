@@ -82,7 +82,7 @@ function App() {
           meta={meta}
           actions={
             <>
-              <Button onClick={handleScraper} disabled={loading || scraping}>
+              <Button onClick={handleScraper} disabled={scraping}>
                 <RefreshCcw
                   className={`h-4 w-4 ${scraping ? "animate-spin" : ""}`}
                 />
