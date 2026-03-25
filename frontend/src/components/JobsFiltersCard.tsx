@@ -1,5 +1,8 @@
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import {
+  CardContent,
+  Card
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import type { JobFile } from "@/types/jobs";
 import { RefreshCcw, Search } from "lucide-react";
@@ -44,7 +47,7 @@ export function JobsFiltersCard({
         </div>
 
         <select
-          className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+          className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
           value={keywordFilter}
           onChange={(event) => setKeywordFilter(event.target.value)}
         >
@@ -58,7 +61,7 @@ export function JobsFiltersCard({
 
         <div className="flex gap-2">
           <select
-            className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+            className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
             value={selectedFile}
             onChange={(event) => setSelectedFile(event.target.value)}
           >
@@ -68,11 +71,19 @@ export function JobsFiltersCard({
               </option>
             ))}
           </select>
-          <Button variant="outline" size="sm" onClick={onRefresh} disabled={loading}>
-            <RefreshCcw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onRefresh}
+            disabled={loading}
+          >
+            <RefreshCcw
+              className={`h-4 w-4 ${loading ? "animate-spin" : ""}`}
+            />
           </Button>
         </div>
       </CardContent>
+      <Card className="border-border/70 bg-card/85 backdrop-blur dark:bg-card/95"></Card>
     </Card>
   );
 }

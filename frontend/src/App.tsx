@@ -68,10 +68,10 @@ function App() {
   }, [triggerScraper]);
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-background px-4 py-8 transition-colors duration-300 md:px-8">
+    <main className="relative min-h-screen overflow-hidden bg-background px-4 transition-colors duration-300 md:px-8">
       <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_20%_15%,rgba(236,195,117,0.35),transparent_30%),radial-gradient(circle_at_80%_10%,rgba(92,151,191,0.28),transparent_35%),radial-gradient(circle_at_50%_95%,rgba(201,120,99,0.22),transparent_40%)] dark:bg-[radial-gradient(circle_at_20%_15%,rgba(240,180,95,0.18),transparent_30%),radial-gradient(circle_at_80%_10%,rgba(92,151,191,0.18),transparent_35%),radial-gradient(circle_at_50%_95%,rgba(201,120,99,0.15),transparent_40%)]" />
 
-      <section className="mx-auto flex w-full max-w-7xl flex-col gap-6">
+      <section className="mx-auto flex w-full flex-col gap-6">
         <JobsHeaderCard
           meta={meta}
           actions={
@@ -80,7 +80,7 @@ function App() {
                 <RefreshCcw className={`h-4 w-4 ${scraping ? "animate-spin" : ""}`} />
                 {scraping ? "Buscando vagas..." : "Buscar vagas"}
               </Button>
-              <ThemeToggle theme={resolvedTheme} onToggle={toggleTheme} />
+              {/* <ThemeToggle theme={resolvedTheme} onToggle={toggleTheme} /> */}
             </>
           }
         />
