@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { useJobsData } from "@/hooks/useJobsData";
 import { useJobsFiltering } from "@/hooks/useJobsFiltering";
 import { useJobsPagination } from "@/hooks/useJobsPagination";
-import { useTheme } from "@/hooks/useTheme";
 import type { JobsMeta } from "@/types/jobs";
 import { RefreshCcw } from "lucide-react";
 import { useCallback, type SetStateAction } from "react";
@@ -18,9 +17,7 @@ function formatDate(timestamp: JobsMeta["modifiedAt"]): string {
 }
 
 function App() {
-  const { resolvedTheme, toggleTheme } = useTheme();
-
-  const { files, selectedFile, setSelectedFile, jobs, meta, loading, scraping, error, loadJobs, triggerScraper } =
+  const { files, selectedFile, setSelectedFile, jobs, meta, loading, scraping, error, triggerScraper } =
     useJobsData();
 
   const { search, setSearch, keywordFilter, setKeywordFilter, keywords, filteredJobs } = useJobsFiltering(jobs);
@@ -82,8 +79,6 @@ function App() {
           selectedFile={selectedFile}
           setSelectedFile={handleSelectedFileChange}
           files={files}
-          loading={loading || scraping}
-          onRefresh={() => loadJobs(selectedFile)}
           meta={meta}
           actions={
             <>

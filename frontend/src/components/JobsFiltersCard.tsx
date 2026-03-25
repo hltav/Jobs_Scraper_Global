@@ -1,11 +1,9 @@
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import type { JobFile } from "@/types/jobs";
+import type { JobFile, JobsMeta } from "@/types/jobs";
 import { Search } from "lucide-react";
-import type { Dispatch, SetStateAction } from "react";
-import type { JobsMeta } from "@/types/jobs";
-import type { ReactNode } from "react";
-import { Badge } from "@/components/ui/badge";
+import type { Dispatch, ReactNode, SetStateAction } from "react";
 
 import { BriefcaseBusiness, FileSpreadsheet } from "lucide-react";
 interface JobsFiltersCardProps {
@@ -17,8 +15,6 @@ interface JobsFiltersCardProps {
   selectedFile: string;
   setSelectedFile: Dispatch<SetStateAction<string>>;
   files: JobFile[];
-  loading: boolean;
-  onRefresh: () => void;
   meta: JobsMeta;
   actions?: ReactNode;
 }
@@ -32,8 +28,6 @@ export function JobsFiltersCard({
   selectedFile,
   setSelectedFile,
   files,
-  loading,
-  onRefresh,
   meta,
   actions,
 }: JobsFiltersCardProps) {
