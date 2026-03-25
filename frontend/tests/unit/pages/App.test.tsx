@@ -46,6 +46,6 @@ import App from "@/App";
 describe("App", () => {
   it("renderiza painel principal", () => {
     render(<App />);
-    expect(screen.getByText("Painel de Vagas")).toBeInTheDocument();
+    expect(screen.getByAltText("Painel de Vagas")).toBeInTheDocument();
   });
 });

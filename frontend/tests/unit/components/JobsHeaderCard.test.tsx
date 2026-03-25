@@ -1,26 +1,22 @@
 import { JobsHeaderCard } from "@/components/JobsHeaderCard";
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+
+vi.mock("@/hooks/useTheme", () => ({
+  useTheme: () => ({ resolvedTheme: "light", toggleTheme: vi.fn() }),
+}));
 
 describe("JobsHeaderCard", () => {
-  it("exibe metadados e acoes", () => {
-    render(
-      <JobsHeaderCard
-        meta={{ file: "vagas.xlsx", modifiedAt: Date.now(), total: 42 }}
-        actions={<button type="button">acao</button>}
-      />,
-    );
+  it("renderiza logo acessivel e descricao", () => {
+    render(<JobsHeaderCard />);
 
-    expect(screen.getByText("Painel de Vagas")).toBeInTheDocument();
-    expect(screen.getByText("vagas.xlsx")).toBeInTheDocument();
-    expect(screen.getByText("42 vagas")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "acao" })).toBeInTheDocument();
+    expect(screen.getByAltText("Painel de Vagas")).toBeInTheDocument();
+    expect(screen.getByText("Leitura automatica dos arquivos XLSX gerados em output.")).toBeInTheDocument();
   });
 
-  it("usa fallback de arquivo quando meta.file esta vazio", () => {
-    render(<JobsHeaderCard meta={{ file: "", modifiedAt: Date.now(), total: 0 }} />);
+  it("renderiza o botao de alternar tema", () => {
+    render(<JobsHeaderCard />);
 
-    expect(screen.getByText("Sem arquivo")).toBeInTheDocument();
-    expect(screen.getByText("0 vagas")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Ativar tema escuro" })).toBeInTheDocument();
   });
 });

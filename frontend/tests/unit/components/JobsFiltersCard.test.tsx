@@ -19,19 +19,23 @@ describe("JobsFiltersCard", () => {
         selectedFile="vagas.xlsx"
         setSelectedFile={setSelectedFile}
         files={[{ file: "vagas.xlsx" }]}
-        loading={false}
-        onRefresh={onRefresh}
+        meta={{ file: "vagas.xlsx", modifiedAt: Date.now(), total: 1 }}
+        actions={
+          <button type="button" onClick={onRefresh}>
+            Atualizar
+          </button>
+        }
       />,
     );
 
     fireEvent.change(screen.getByPlaceholderText(/buscar/i), { target: { value: "node" } });
-    fireEvent.click(screen.getByRole("button"));
+    fireEvent.click(screen.getByRole("button", { name: /atualizar/i }));
 
     expect(setSearch).toHaveBeenCalled();
     expect(onRefresh).toHaveBeenCalledTimes(1);
   });
 
-  it("desabilita refresh e aplica spinner quando loading", () => {
+  it("renderiza badge de arquivo e total de vagas", () => {
     render(
       <JobsFiltersCard
         search=""
@@ -42,16 +46,12 @@ describe("JobsFiltersCard", () => {
         selectedFile="vagas.xlsx"
         setSelectedFile={vi.fn()}
         files={[{ file: "vagas.xlsx" }]}
-        loading
-        onRefresh={vi.fn()}
+        meta={{ file: "vagas.xlsx", modifiedAt: Date.now(), total: 1 }}
       />,
     );
 
-    const refreshButton = screen.getByRole("button");
-    expect(refreshButton).toBeDisabled();
-
-    const spinnerIcon = refreshButton.querySelector(".animate-spin");
-    expect(spinnerIcon).not.toBeNull();
+    expect(screen.getAllByText("vagas.xlsx").length).toBeGreaterThan(0);
+    expect(screen.getByText("1 vagas")).toBeInTheDocument();
   });
 
   it("dispara mudancas nos filtros de keyword e arquivo", () => {
@@ -68,8 +68,7 @@ describe("JobsFiltersCard", () => {
         selectedFile="vagas.xlsx"
         setSelectedFile={setSelectedFile}
         files={[{ file: "vagas.xlsx" }, { file: "historico.xlsx" }]}
-        loading={false}
-        onRefresh={vi.fn()}
+        meta={{ file: "vagas.xlsx", modifiedAt: Date.now(), total: 2 }}
       />,
     );
 
