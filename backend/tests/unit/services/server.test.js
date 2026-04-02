@@ -80,8 +80,9 @@ describe("server entry", () => {
     await import("../../../src/server.js");
 
     expect(mocks.expressStatic).toHaveBeenCalledWith("/tmp/frontend-dist");
-    expect(mocks.use).toHaveBeenCalledTimes(2);
+    expect(mocks.use).toHaveBeenCalledTimes(3);
     expect(mocks.use).toHaveBeenNthCalledWith(1, mocks.staticMiddleware);
+    expect(mocks.use).toHaveBeenNthCalledWith(3, "/docs", expect.anything(), expect.any(Function));
 
     const fallbackHandler = mocks.use.mock.calls[1][0];
 
