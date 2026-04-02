@@ -11,10 +11,13 @@ Uma plataforma interna para transformar arquivos XLSX de vagas em uma experienci
 >
 > Toda nova implementação deve nascer primeiro de um **card/issue** e, somente depois, de uma **branch criada a partir da `master`**.
 >
+> **Board oficial para abertura e acompanhamento dos cards:**
+> https://github.com/users/Benevanio/projects/6
+>
 > O fluxo correto de trabalho deve seguir EXATAMENTE essa sequência:
 >
-> 1. **Abrir um Card/Issue de melhoria** - descreva a feature, bug ou ajuste a implementar
-> 2. **Criar uma branch `feature/` a partir de `master`** - use o número do card na nomenclatura
+> 1. **Abrir um Card/Issue de melhoria no board oficial** - https://github.com/users/Benevanio/projects/6
+> 2. **Criar a branch a partir da `master` usando o mesmo nome do card** - mantenha o número e a descrição no nome da `feature/`
 > 3. **Desenvolver e testar localmente** - faça commits regulares na feature
 > 4. **Abrir Pull Request** - a PR da feature deve apontar para `develop` (NÃO para `master`)
 > 5. **Code Review e Merge em `develop`** - após aprovação, merge e validação
@@ -23,8 +26,8 @@ Uma plataforma interna para transformar arquivos XLSX de vagas em uma experienci
 >
 > **Exemplo prático:**
 >
-> - Card: `#52 - Criar card de resumo no dashboard`
-> - Branch criada a partir da `master`: `feature/52-card-resumo-dashboard`
+> - Card no board: `#52 - Criar card de resumo no dashboard`
+> - Branch criada a partir da `master` com o mesmo nome do card: `feature/52-card-resumo-dashboard`
 >
 > ```bash
 > git checkout master
