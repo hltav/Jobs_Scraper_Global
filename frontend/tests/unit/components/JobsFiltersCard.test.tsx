@@ -2,6 +2,10 @@ import { JobsFiltersCard } from "@/components/JobsFiltersCard";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
+vi.mock("@/components/KeywordsModal", () => ({
+  KeywordsModal: () => <div>Gerenciar filtros</div>,
+}));
+
 describe("JobsFiltersCard", () => {
   it("dispara callbacks de filtro e refresh", () => {
     const setSearch = vi.fn();

@@ -67,7 +67,8 @@ export function KeywordsModal({ onClose }: KeywordsModalProps) {
         <CardContent className="space-y-4">
           <div className="flex gap-2">
             <Input
-              placeholder="Nova palavra-chave ou filtro..."
+              placeholder="Nova keyword ou filtro..."
+              aria-label="Nova keyword ou filtro"
               value={newKeyword}
               onChange={(e) => setNewKeyword(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleAddKeyword()}
