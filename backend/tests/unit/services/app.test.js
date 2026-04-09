@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   getConfigMock: vi.fn(() => ({
@@ -37,6 +37,10 @@ vi.mock("../../../src/logger.js", () => ({ logInfo: mocks.logInfoMock }));
 import { run } from "../../../src/app.js";
 
 describe("run", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   it("orquestra coleta e exportacao", async () => {
     await run();
 
@@ -51,5 +55,18 @@ describe("run", () => {
       "output/a.pdf",
     );
     expect(mocks.logInfoMock).toHaveBeenCalled();
+    expect(mocks.logInfoMock).toHaveBeenCalledWith("Resultado do cache: MISS");
+  });
+
+  it("registra HIT quando o resultado vem do cache", async () => {
+    mocks.searchJobsWithCacheMock.mockResolvedValueOnce({
+      jobs: [{ titulo: "Dev", palavra: "React" }],
+      total: 1,
+      fromCache: true,
+    });
+
+    await run();
+
+    expect(mocks.logInfoMock).toHaveBeenCalledWith("Resultado do cache: HIT");
   });
 });
