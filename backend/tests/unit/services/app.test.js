@@ -19,6 +19,9 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock("../../../src/config.js", () => ({ getConfig: mocks.getConfigMock }));
+vi.mock("../../../src/db/keywordsStore.js", () => ({
+  loadKeywords: vi.fn(async (fallback = []) => fallback),
+}));
 vi.mock("../../../src/pipeline/searchJobsWithCache.js", () => ({
   searchJobsWithCache: mocks.searchJobsWithCacheMock,
 }));
