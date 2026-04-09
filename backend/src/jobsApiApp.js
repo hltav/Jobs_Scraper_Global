@@ -51,7 +51,11 @@ function parseKeywordsFromEnv(value) {
 
 function readEnvironmentData() {
   if (getKeywordsStorageMode() === "env") {
-    return { KEYWORDS: parseKeywordsFromEnv(process.env.SEARCH_KEYWORDS) };
+    const envKeywords = parseKeywordsFromEnv(process.env.SEARCH_KEYWORDS);
+
+    if (envKeywords.length > 0) {
+      return { KEYWORDS: envKeywords };
+    }
   }
 
   const envPath = getKeywordsFilePath();
