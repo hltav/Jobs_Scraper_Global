@@ -21,6 +21,7 @@ const CONFIG_ENV_KEYS = [
   "TIME_FILTER",
   "SEARCH_KEYWORDS",
   "KEYWORDS_FILE_PATH",
+  "KEYWORDS_STORAGE_MODE",
 ];
 
 describe("getConfig", () => {
@@ -52,6 +53,20 @@ describe("getConfig", () => {
     const tempDir = mkdtempSync(path.join(tmpdir(), "jobs-config-"));
     vi.stubEnv("KEYWORDS_FILE_PATH", path.join(tempDir, "missing-environment.json"));
     vi.stubEnv("SEARCH_KEYWORDS", "Java,Spring,RabbitMQ,Docker");
+
+    const config = getConfig();
+    expect(config.keywords).toEqual(["Java", "Spring", "RabbitMQ", "Docker"]);
+  });
+
+  it("prioriza SEARCH_KEYWORDS sobre o arquivo quando ambos existem", () => {
+    const tempDir = mkdtempSync(path.join(tmpdir(), "jobs-config-"));
+    const keywordsFile = path.join(tempDir, "environment.json");
+
+    writeFileSync(keywordsFile, JSON.stringify({ KEYWORDS: ["Legado", "Arquivo"] }), "utf-8");
+
+    vi.stubEnv("KEYWORDS_FILE_PATH", keywordsFile);
+    vi.stubEnv("SEARCH_KEYWORDS", "Java,Spring,RabbitMQ,Docker");
+    vi.stubEnv("KEYWORDS_STORAGE_MODE", "env");
 
     const config = getConfig();
     expect(config.keywords).toEqual(["Java", "Spring", "RabbitMQ", "Docker"]);

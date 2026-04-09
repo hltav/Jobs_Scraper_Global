@@ -17,6 +17,14 @@ const DEFAULT_ALLOWED_ORIGINS = [
   "http://localhost:5174",
 ];
 
+function getKeywordsStorageMode() {
+  const configuredMode = String(process.env.KEYWORDS_STORAGE_MODE ?? "file")
+    .trim()
+    .toLowerCase();
+
+  return configuredMode === "env" ? "env" : "file";
+}
+
 function getKeywordsFilePath() {
   const configuredPath = process.env.KEYWORDS_FILE_PATH?.trim();
   return configuredPath
@@ -32,7 +40,20 @@ function normalizeKeywords(keywords) {
   return [...new Set(keywords.map((item) => String(item ?? "").trim()).filter(Boolean))];
 }
 
+function parseKeywordsFromEnv(value) {
+  return normalizeKeywords(
+    String(value ?? "")
+      .split(",")
+      .map((item) => item.trim())
+      .filter(Boolean),
+  ) ?? [];
+}
+
 function readEnvironmentData() {
+  if (getKeywordsStorageMode() === "env") {
+    return { KEYWORDS: parseKeywordsFromEnv(process.env.SEARCH_KEYWORDS) };
+  }
+
   const envPath = getKeywordsFilePath();
 
   if (!existsSync(envPath)) {
@@ -48,9 +69,26 @@ function readEnvironmentData() {
 }
 
 function writeEnvironmentData(data) {
+  const normalizedKeywords = normalizeKeywords(data?.KEYWORDS) ?? [];
+
+  if (getKeywordsStorageMode() === "env") {
+    process.env.SEARCH_KEYWORDS = normalizedKeywords.join(",");
+    return {
+      ...(data && typeof data === "object" ? data : {}),
+      KEYWORDS: normalizedKeywords,
+    };
+  }
+
   const envPath = getKeywordsFilePath();
   mkdirSync(path.dirname(envPath), { recursive: true });
-  writeFileSync(envPath, JSON.stringify(data, null, 2), "utf-8");
+
+  const nextData = {
+    ...(data && typeof data === "object" ? data : {}),
+    KEYWORDS: normalizedKeywords,
+  };
+
+  writeFileSync(envPath, JSON.stringify(nextData, null, 2), "utf-8");
+  return nextData;
 }
 
 function parseAllowedOrigins(value) {
@@ -305,12 +343,10 @@ export function createJobsApiApp(options = {}) {
         });
       }
 
-      const envData = {
+      const envData = writeEnvironmentData({
         ...readEnvironmentData(),
         KEYWORDS: normalizedKeywords,
-      };
-
-      writeEnvironmentData(envData);
+      });
 
       return res.json({
         ok: true,

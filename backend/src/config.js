@@ -38,6 +38,14 @@ function parseNumber(value, fallback) {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
 }
 
+function getKeywordsStorageMode() {
+  const configuredMode = String(process.env.KEYWORDS_STORAGE_MODE ?? "file")
+    .trim()
+    .toLowerCase();
+
+  return configuredMode === "env" ? "env" : "file";
+}
+
 function getKeywordsFilePath() {
   const configuredPath = process.env.KEYWORDS_FILE_PATH?.trim();
   return configuredPath
@@ -53,8 +61,29 @@ function normalizeKeywords(keywords) {
   return [...new Set(keywords.map((item) => String(item ?? "").trim()).filter(Boolean))];
 }
 
+function parseKeywordsFromEnv(value) {
+  if (!value) {
+    return null;
+  }
+
+  const keywords = String(value)
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+
+  return keywords.length > 0 ? keywords : null;
+}
+
 function parseKeywords(value) {
-  // Tenta pegar do arquivo environment.json
+  const keywordsStorageMode = getKeywordsStorageMode();
+
+  if (keywordsStorageMode === "env") {
+    const keywordsFromEnv = parseKeywordsFromEnv(value);
+    if (keywordsFromEnv) {
+      return keywordsFromEnv;
+    }
+  }
+
   try {
     const envPath = getKeywordsFilePath();
     if (existsSync(envPath)) {
@@ -63,20 +92,15 @@ function parseKeywords(value) {
         return normalizeKeywords(data.KEYWORDS) ?? [];
       }
     }
-  } catch (err) {
+  } catch {
     // Se falhar, fallback
   }
 
-  // Tenta pegar da variavel de ambiente
-  if (value) {
-    const keywords = value
-      .split(",")
-      .map((item) => item.trim())
-      .filter(Boolean);
-    if (keywords.length > 0) return keywords;
+  const keywordsFromEnv = parseKeywordsFromEnv(value);
+  if (keywordsFromEnv) {
+    return keywordsFromEnv;
   }
 
-  // Fallback para as keywords padrao
   return DEFAULT_KEYWORDS;
 }
 
@@ -108,6 +132,11 @@ export function getConfig() {
     jobTypes: process.env.JOB_TYPES || "C,F",
     // f_TPR examples: r86400 (24h), r604800 (7 dias), r2592000 (30 dias)
     timeFilter: parseTimeFilter(process.env.TIME_FILTER, "r604800"),
-    keywords: parseKeywords(process.env.SEARCH_KEYWORDS)
+    keywords: parseKeywords(process.env.SEARCH_KEYWORDS),
+    keywordsStorageMode: getKeywordsStorageMode(),
+    cacheTtlMs: parseNumber(process.env.CACHE_TTL_MS, 10 * 60 * 1000),
+    databaseUrl: process.env.DATABASE_URL?.trim() || "",
+    redisUrl: process.env.REDIS_URL?.trim() || "",
+    redisKeyPrefix: process.env.REDIS_KEY_PREFIX?.trim() || "vagas-full"
   };
 }

@@ -1,4 +1,4 @@
-import { mkdtempSync } from "fs";
+import { existsSync, mkdtempSync } from "fs";
 import { tmpdir } from "os";
 import { join } from "path";
 import request from "supertest";
@@ -22,10 +22,14 @@ describe("jobs API", () => {
     vi.clearAllMocks();
     mocks.run.mockResolvedValue(undefined);
     delete process.env.KEYWORDS_FILE_PATH;
+    delete process.env.KEYWORDS_STORAGE_MODE;
+    delete process.env.SEARCH_KEYWORDS;
   });
 
   afterEach(() => {
     delete process.env.KEYWORDS_FILE_PATH;
+    delete process.env.KEYWORDS_STORAGE_MODE;
+    delete process.env.SEARCH_KEYWORDS;
     tmpDir = undefined;
   });
 
@@ -196,6 +200,27 @@ describe("jobs API", () => {
       message: "Keywords atualizadas com sucesso.",
       keywords: [],
     });
+  });
+
+  it("POST /api/keywords em modo env atualiza sem depender de arquivo json", async () => {
+    tmpDir = mkdtempSync(join(tmpdir(), "jobs-api-"));
+    process.env.KEYWORDS_STORAGE_MODE = "env";
+    process.env.KEYWORDS_FILE_PATH = join(tmpDir, "nested", "environment.json");
+    process.env.SEARCH_KEYWORDS = "Java,Node";
+
+    const app = createJobsApiApp({ outputDir: tmpDir });
+    const res = await request(app)
+      .post("/api/keywords")
+      .send({ keywords: ["Redis", "PostgreSQL"] })
+      .expect(200);
+
+    expect(res.body).toEqual({
+      ok: true,
+      message: "Keywords atualizadas com sucesso.",
+      keywords: ["Redis", "PostgreSQL"],
+    });
+    expect(process.env.SEARCH_KEYWORDS).toBe("Redis,PostgreSQL");
+    expect(existsSync(process.env.KEYWORDS_FILE_PATH)).toBe(false);
   });
 
   it("GET /api/keywords retorna 200 com as keywords", async () => {
