@@ -13,6 +13,8 @@ import { sources } from "./sources/index.js";
 const DEFAULT_ALLOWED_ORIGINS = [
   "https://painel-vagas-lake.vercel.app",
   "https://painel-vagas-m6hbzlqeh-bene-teslas-projects.vercel.app",
+  "https://jobsglobalscraper.ddns.net",
+  "http://jobsglobalscraper.ddns.net",
   "http://localhost:5173",
   "http://localhost:5174",
 ];
