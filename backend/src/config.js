@@ -1,10 +1,4 @@
-import { existsSync, readFileSync } from "fs";
-import path from "path";
-import { fileURLToPath } from "url";
-
-const MODULE_DIR = path.dirname(fileURLToPath(import.meta.url));
-
-const DEFAULT_KEYWORDS = [  
+const DEFAULT_KEYWORDS = [
   "Java",
   "JavaScript",
   "React",
@@ -39,18 +33,11 @@ function parseNumber(value, fallback) {
 }
 
 function getKeywordsStorageMode() {
-  const configuredMode = String(process.env.KEYWORDS_STORAGE_MODE ?? "file")
+  const configuredMode = String(process.env.KEYWORDS_STORAGE_MODE ?? "redis")
     .trim()
     .toLowerCase();
 
-  return configuredMode === "env" ? "env" : "file";
-}
-
-function getKeywordsFilePath() {
-  const configuredPath = process.env.KEYWORDS_FILE_PATH?.trim();
-  return configuredPath
-    ? path.resolve(configuredPath)
-    : path.resolve(MODULE_DIR, "db", "environment.json");
+  return configuredMode === "env" ? "env" : "redis";
 }
 
 function normalizeKeywords(keywords) {
@@ -62,46 +49,18 @@ function normalizeKeywords(keywords) {
 }
 
 function parseKeywordsFromEnv(value) {
-  if (!value) {
-    return null;
-  }
+  const keywords = normalizeKeywords(
+    String(value ?? "")
+      .split(",")
+      .map((item) => item.trim())
+      .filter(Boolean),
+  );
 
-  const keywords = String(value)
-    .split(",")
-    .map((item) => item.trim())
-    .filter(Boolean);
-
-  return keywords.length > 0 ? keywords : null;
+  return keywords?.length ? keywords : null;
 }
 
 function parseKeywords(value) {
-  const keywordsStorageMode = getKeywordsStorageMode();
-
-  if (keywordsStorageMode === "env") {
-    const keywordsFromEnv = parseKeywordsFromEnv(value);
-    if (keywordsFromEnv) {
-      return keywordsFromEnv;
-    }
-  }
-
-  try {
-    const envPath = getKeywordsFilePath();
-    if (existsSync(envPath)) {
-      const data = JSON.parse(readFileSync(envPath, "utf-8"));
-      if (Array.isArray(data.KEYWORDS)) {
-        return normalizeKeywords(data.KEYWORDS) ?? [];
-      }
-    }
-  } catch {
-    // Se falhar, fallback
-  }
-
-  const keywordsFromEnv = parseKeywordsFromEnv(value);
-  if (keywordsFromEnv) {
-    return keywordsFromEnv;
-  }
-
-  return DEFAULT_KEYWORDS;
+  return parseKeywordsFromEnv(value) ?? DEFAULT_KEYWORDS;
 }
 
 function parseTimeFilter(value, fallback) {
@@ -121,7 +80,7 @@ export function getConfig() {
     maxPagesPerKeyword: parseNumber(process.env.MAX_PAGES_PER_KEYWORD, 5),
     viewport: {
       width: parseNumber(process.env.VIEWPORT_WIDTH, 1280),
-      height: parseNumber(process.env.VIEWPORT_HEIGHT, 800)
+      height: parseNumber(process.env.VIEWPORT_HEIGHT, 800),
     },
     outputFile: process.env.OUTPUT_FILE || "output/vagas_remoto.xlsx",
     pdfFile: process.env.PDF_FILE || "output/vagas_remoto.pdf",
@@ -137,6 +96,6 @@ export function getConfig() {
     cacheTtlMs: parseNumber(process.env.CACHE_TTL_MS, 10 * 60 * 1000),
     databaseUrl: process.env.DATABASE_URL?.trim() || "",
     redisUrl: process.env.REDIS_URL?.trim() || "",
-    redisKeyPrefix: process.env.REDIS_KEY_PREFIX?.trim() || "vagas-full"
+    redisKeyPrefix: process.env.REDIS_KEY_PREFIX?.trim() || "vagas-full",
   };
 }

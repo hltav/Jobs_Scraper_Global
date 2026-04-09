@@ -1,24 +1,4 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
-import path from "path";
-import { fileURLToPath } from "url";
 import { getRedisClient } from "../cache/cache.js";
-
-const MODULE_DIR = path.dirname(fileURLToPath(import.meta.url));
-
-function getKeywordsStorageMode() {
-  const configuredMode = String(process.env.KEYWORDS_STORAGE_MODE ?? "file")
-    .trim()
-    .toLowerCase();
-
-  return configuredMode === "env" ? "env" : "file";
-}
-
-function getKeywordsFilePath() {
-  const configuredPath = process.env.KEYWORDS_FILE_PATH?.trim();
-  return configuredPath
-    ? path.resolve(configuredPath)
-    : path.resolve(MODULE_DIR, "environment.json");
-}
 
 function getKeywordsRedisKey() {
   const configuredKey = process.env.KEYWORDS_REDIS_KEY?.trim();
@@ -47,60 +27,43 @@ function parseKeywordsFromEnv(value) {
   ) ?? [];
 }
 
-function readKeywordsFromFile() {
-  const envPath = getKeywordsFilePath();
-
-  if (!existsSync(envPath)) {
-    return null;
-  }
-
-  try {
-    const data = JSON.parse(readFileSync(envPath, "utf-8"));
-    return Array.isArray(data?.KEYWORDS) ? normalizeKeywords(data.KEYWORDS) ?? [] : [];
-  } catch {
-    return [];
-  }
-}
-
-function writeKeywordsToFile(keywords) {
-  const envPath = getKeywordsFilePath();
-  mkdirSync(path.dirname(envPath), { recursive: true });
-  writeFileSync(envPath, JSON.stringify({ KEYWORDS: keywords }, null, 2), "utf-8");
-}
-
-export async function loadKeywords(fallback = []) {
-  const client = await getRedisClient();
-
-  if (client) {
-    try {
-      const raw = await client.get(getKeywordsRedisKey());
-      if (raw) {
-        const parsed = JSON.parse(raw);
-
-        if (Array.isArray(parsed)) {
-          return normalizeKeywords(parsed) ?? [];
-        }
-
-        if (Array.isArray(parsed?.KEYWORDS)) {
-          return normalizeKeywords(parsed.KEYWORDS) ?? [];
-        }
-      }
-    } catch {
-      // fallback below
-    }
-  }
-
+function getFallbackKeywords(fallback = []) {
   const envKeywords = parseKeywordsFromEnv(process.env.SEARCH_KEYWORDS);
   if (envKeywords.length > 0) {
     return envKeywords;
   }
 
-  const fileKeywords = readKeywordsFromFile();
-  if (fileKeywords !== null) {
-    return fileKeywords;
+  return normalizeKeywords(fallback) ?? [];
+}
+
+export async function loadKeywords(fallback = []) {
+  const fallbackKeywords = getFallbackKeywords(fallback);
+  const client = await getRedisClient();
+
+  if (!client) {
+    return fallbackKeywords;
   }
 
-  return normalizeKeywords(fallback) ?? [];
+  try {
+    const raw = await client.get(getKeywordsRedisKey());
+    if (!raw) {
+      return fallbackKeywords;
+    }
+
+    const parsed = JSON.parse(raw);
+
+    if (Array.isArray(parsed)) {
+      return normalizeKeywords(parsed) ?? [];
+    }
+
+    if (Array.isArray(parsed?.KEYWORDS)) {
+      return normalizeKeywords(parsed.KEYWORDS) ?? [];
+    }
+  } catch {
+    // fallback below
+  }
+
+  return fallbackKeywords;
 }
 
 export async function saveKeywords(keywords) {
@@ -111,16 +74,10 @@ export async function saveKeywords(keywords) {
   }
 
   const client = await getRedisClient();
-  if (client) {
-    await client.set(getKeywordsRedisKey(), JSON.stringify(normalizedKeywords));
-    return normalizedKeywords;
+  if (!client) {
+    throw new Error("Redis indisponivel para salvar keywords.");
   }
 
-  if (getKeywordsStorageMode() === "env") {
-    process.env.SEARCH_KEYWORDS = normalizedKeywords.join(",");
-    return normalizedKeywords;
-  }
-
-  writeKeywordsToFile(normalizedKeywords);
+  await client.set(getKeywordsRedisKey(), JSON.stringify(normalizedKeywords));
   return normalizedKeywords;
 }
