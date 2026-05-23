@@ -1,24 +1,3 @@
-// import { defineConfig } from "vitest/config";
-
-// export default defineConfig({
-//   test: {
-//     globals: true,
-//     environment: "node",
-//     env: loadEnv(mode, process.cwd(), ""),
-//     setupFiles: ["./tests/setup.js"],
-//     coverage: {
-//       provider: "v8",
-//       reporter: ["text", "html"],
-//       thresholds: {
-//         lines: 80,
-//         functions: 80,
-//         branches: 80,
-//         statements: 80,
-//       },
-//     },
-//   },
-// });
-
 import { loadEnv } from "vite";
 import { defineConfig } from "vitest/config";
 
@@ -40,6 +19,15 @@ export default defineConfig(({ mode }) => {
           branches: 80,
           statements: 80,
         },
+        exclude: [
+          "src/swagger.ts",
+          "src/db/schema/**",
+          "src/db/client.ts",
+          "src/db/types/**",
+          "src/modules/types/**",
+          "drizzle.config.js",
+          "index.js",
+        ],
       },
     },
   };

@@ -1,0 +1,20 @@
+meta {
+  name: SearchJobs
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{base_url}}/jobs/search?keywords=java,node.js,react,angular
+  body: none
+  auth: inherit
+}
+
+params:query {
+  keywords: java,node.js,react,angular
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

@@ -1,0 +1,16 @@
+meta {
+  name: Get Preferences
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{base_url}}/users/preferences
+  body: json
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
