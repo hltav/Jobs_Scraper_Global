@@ -58,7 +58,7 @@ export function HeroSection() {
           transition={{ duration: 0.7, delay: 0.25 }}
           className="text-lg md:text-xl text-gray-500 dark:text-gray-400 max-w-2xl mx-auto mb-10 leading-relaxed font-medium"
         >
-          O Jobs Scraper varre dezenas de plataformas automaticamente, transforma candidatos em profissionais preparados e entrega as melhores oportunidades filtradas para você.
+          O Painel de Vagas varre dezenas de plataformas automaticamente, transforma candidatos em profissionais preparados e entrega as melhores oportunidades filtradas para você.
         </motion.p>
 
         <motion.div
@@ -69,7 +69,7 @@ export function HeroSection() {
         >
           <Link
             to="/app"
-            className="group inline-flex items-center gap-2 bg-[#0c6b35] dark:bg-emerald-600 hover:bg-[#0a5a2d] dark:hover:bg-emerald-500 text-white font-semibold text-base py-3.5 px-8 rounded-full transition-all duration-300 shadow-lg shadow-emerald-500/20 hover:scale-[1.02]"
+            className="group inline-flex items-center gap-2 bg-[#0c6b35] dark:bg-emerald-600 hover:bg-[#0a5a2d] dark:hover:bg-emerald-500 text-white font-semibold text-base py-3.5 px-8 rounded-full transition-all duration-300  hover:scale-[1.02]"
           >
             Comece Agora
             <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />

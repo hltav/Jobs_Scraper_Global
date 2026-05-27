@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import {
-  Menu, X, MessageSquare,
-  Sparkles, Workflow, BadgeDollarSign, RadioTower, Sun, Moon,
+  Menu, X,
+  Sparkles, Workflow, RadioTower, Sun, Moon,
   User,
   Users2,
 } from "lucide-react";
@@ -89,19 +89,16 @@ export function Navbar() {
     <nav
       className={`fixed top-4 left-1/2 -translate-x-1/2 z-50 transition-all duration-500 w-[95%] max-w-4xl ${
         isScrolledPastHero
-          ? "opacity-100 translate-y-0 pointer-events-auto bg-white/80 dark:bg-[#0d1a14]/80 backdrop-blur-md border border-gray-200 dark:border-emerald-900/40 rounded-full p-1.5 shadow-xl"
+          ? "opacity-100 translate-y-0 pointer-events-auto bg-white/80 dark:bg-background/80 backdrop-blur-md border border-gray-200 dark:border-border/40 rounded-full p-1.5 shadow-xl"
           : "opacity-0 -translate-y-full pointer-events-none"
       }`}
     >
-      {/* Removeu o justify-between para os itens não se repelirem */}
       <div className="flex items-center w-full h-11 px-4">
 
-        {/* LOGO (Fica na esquerda) */}
-        <Link to="/" className="flex font-bold text-sm items-center gap-2 shrink-0 dark:text-white text-black">
+        <Link to="/" className="flex font-bold text-sm items-center gap-2 shrink-0 dark:text-foreground text-black">
           Painel de vagas
         </Link>
 
-        {/* LINKS CENTRALIZADOS (O mx-auto empurra o logo pra esquerda e as ações pra direita, mantendo o miolo junto) */}
         <div className="hidden md:flex items-center gap-2 mx-auto bg-gray-50/50 dark:bg-neutral-900/30 px-2 py-1 rounded-full border border-gray-100 dark:border-neutral-800/50">
           {navLinks.map((link) => {
             const Icon     = link.icon;
@@ -167,7 +164,7 @@ export function Navbar() {
       </div>
 
       {isMobileMenuOpen && (
-        <div className="md:hidden absolute top-[calc(100%+0.5rem)] left-0 w-full bg-white/95 dark:bg-[#0d1a14]/95 backdrop-blur-xl border border-gray-200 dark:border-emerald-900/30 rounded-2xl shadow-2xl p-3 flex flex-col gap-1">
+        <div className="md:hidden absolute top-[calc(100%+0.5rem)] left-0 w-full bg-white/95 dark:bg-background/95 backdrop-blur-xl border border-gray-200 dark:border-border/30 rounded-2xl shadow-2xl p-3 flex flex-col gap-1">
           {navLinks.map((link) => {
             const Icon     = link.icon;
             const isActive = activeSection === link.name;
