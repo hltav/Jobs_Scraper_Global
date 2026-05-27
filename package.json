@@ -10,6 +10,9 @@
     "backend"
   ],
   "scripts": {
+    "prepare": "husky",
+    "setup:dev": "npm ci && npm run prepare && npm run hooks:doctor",
+    "hooks:doctor": "node scripts/hooks-doctor.cjs",
     "dev": "concurrently \"npm run dev --workspace=frontend\" \"npm run dev --workspace=backend\"",
     "dev:frontend": "npm run dev --workspace=frontend",
     "dev:backend": "npm run dev --workspace=backend",
@@ -44,6 +47,8 @@
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
+    "@commitlint/cli": "^21.0.1",
+    "@commitlint/config-conventional": "^21.0.1",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/node": "^25.6.0",
@@ -56,7 +61,14 @@
     "drizzle-kit": "^0.31.10",
     "electron": "^33.0.0",
     "electron-builder": "^25.0.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.0.5",
     "typescript": "^6.0.2"
+  },
+  "lint-staged": {
+    "frontend/src/**/*.{js,jsx,ts,tsx}": [
+      "npm exec --workspace=frontend eslint -- --max-warnings=0"
+    ]
   },
   "build": {
     "appId": "com.benetesla.vagas-full",
