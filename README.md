@@ -360,12 +360,6 @@ Bootstrap recomendado para novos ambientes:
 npm run setup:dev
 ```
 
-Diagnóstico de hooks:
-
-```bash
-npm run hooks:doctor
-```
-
 Checklist quando hooks não disparam:
 
 1. Validar se o diretório Git foi detectado: git rev-parse --git-dir.
