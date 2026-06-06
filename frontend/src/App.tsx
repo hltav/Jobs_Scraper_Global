@@ -5,6 +5,7 @@ import Dashboard from "./pages/dashboard/Dashboard";
 import NotFound from "./not_found";
 import Loading from "./Loading";
 import LoginPage from "./pages/login/LoginPage";
+import RegisterPage from "./pages/register/RegisterPage";
 
 function App() {
   const [appCarregando, setAppCarregando] = useState(true);
@@ -25,7 +26,8 @@ function App() {
     <Routes>
       <Route path="/" element={<LandingPage />} />
       <Route path="/app" element={<Dashboard />} />
-      <Route path="/login" element={<LoginPage/> } />
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/register" element={<RegisterPage/> }/>
       <Route path="*" element={<NotFound />} />
     </Routes>
   );

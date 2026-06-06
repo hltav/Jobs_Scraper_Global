@@ -1,47 +1,68 @@
 import { useState, FormEvent } from "react"
 import { Eye, EyeOff, ArrowLeft } from "lucide-react"
 import { Image } from "@unpic/react"
+import PhoneInput from "react-phone-number-input"
+import "react-phone-number-input/style.css"
 
-export default function RightSide() {
+export default function RegisterSide() {
   const [showPassword, setShowPassword] = useState(false)
-
+  const [nome, setNome] = useState("")
   const [email, setEmail] = useState("")
+  const [telefone, setTelefone] = useState<string | undefined>("")
   const [password, setPassword] = useState("")
+  const [cpf, setCpf] = useState("")
 
+  const [nomeError, setNomeError] = useState("")
   const [emailError, setEmailError] = useState("")
+  const [telefoneError, setTelefoneError] = useState("")
   const [passwordError, setPasswordError] = useState("")
+  const [cpfError, setCpfError] = useState("")
 
   const handleRevealPassword = () => setShowPassword((prev) => !prev)
 
+  const formatCpf = (value: string) => {
+    const digits = value.replace(/\D/g, "").slice(0, 11)
+    if (digits.length <= 3) return digits
+    if (digits.length <= 6) return `${digits.slice(0, 3)}.${digits.slice(3)}`
+    if (digits.length <= 9) return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6)}`
+    return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6, 9)}-${digits.slice(9)}`
+  }
+
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault()
-
+    setNomeError("")
     setEmailError("")
+    setTelefoneError("")
     setPasswordError("")
+    setCpfError("")
 
     let isValid = true
 
+    if (!nome) { setNomeError("O campo de nome é obrigatório."); isValid = false }
+
     if (!email) {
-      setEmailError("O campo de e-mail é obrigatório.")
-      isValid = false
+      setEmailError("O campo de e-mail é obrigatório."); isValid = false
     } else {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-      if (!emailRegex.test(email)) {
-        setEmailError("Por favor, insira um e-mail válido.")
-        isValid = false
-      }
+      if (!emailRegex.test(email)) { setEmailError("Por favor, insira um e-mail válido."); isValid = false }
     }
 
+    if (!telefone) { setTelefoneError("O campo de telefone é obrigatório."); isValid = false }
+
     if (!password) {
-      setPasswordError("O campo de senha é obrigatório.")
-      isValid = false
+      setPasswordError("O campo de senha é obrigatório."); isValid = false
     } else if (password.length < 6) {
-      setPasswordError("A senha precisa conter pelo menos 6 caracteres.")
-      isValid = false
+      setPasswordError("A senha precisa conter pelo menos 6 caracteres."); isValid = false
+    }
+
+    if (!cpf) {
+      setCpfError("O campo de CPF é obrigatório."); isValid = false
+    } else if (cpf.replace(/\D/g, "").length < 11) {
+      setCpfError("Por favor, insira um CPF válido."); isValid = false
     }
 
     if (isValid) {
-      console.log("Formulário válido!", { email, password })
+      console.log("Cadastro válido!", { nome, email, telefone, password, cpf })
     }
   }
 
@@ -51,11 +72,11 @@ export default function RightSide() {
       <div className="w-full max-w-2xl mx-auto flex flex-col items-center gap-8">
         <div className="w-full self-start">
           <a
-            href="/"
+            href="/login"
             className="inline-flex items-center gap-2 text-sm font-medium text-neutral-500 dark:text-neutral-400 hover:text-neutral-800 dark:hover:text-neutral-200 transition-colors group"
           >
             <ArrowLeft className="h-4 w-4 transform group-hover:-translate-x-1 transition-transform" />
-            Voltar para a página principal
+            Voltar para o login
           </a>
         </div>
 
@@ -66,15 +87,33 @@ export default function RightSide() {
             <span className="text-blue-500 font-light">&gt;</span>
           </h2>
           <p className="mt-4 text-sm text-neutral-500 dark:text-neutral-400">
-            Novo por aqui?{" "}
-            <a href="/register" className="font-semibold text-emerald-500 dark:text-emerald-400 underline underline-offset-2 hover:text-emerald-600 transition-colors">
-              Cadastre-se
+            Já tem conta?{" "}
+            <a href="/login" className="font-semibold text-emerald-500 dark:text-emerald-400 underline underline-offset-2 hover:text-emerald-600 transition-colors">
+              Entrar
             </a>
           </p>
         </div>
       </div>
 
-      <form className="space-y-6 w-full max-w-2xl mx-auto" onSubmit={handleSubmit}>
+      <form className="space-y-5 w-full max-w-2xl mx-auto" onSubmit={handleSubmit}>
+
+        <div>
+          <label htmlFor="nome" className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
+            Nome
+          </label>
+          <input
+            id="nome"
+            type="text"
+            value={nome}
+            onChange={(e) => setNome(e.target.value)}
+            placeholder="Bene Santos"
+            className={`w-full px-4 py-3.5 rounded-xl border bg-white dark:bg-slate-800 text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 transition-shadow shadow-sm ${
+              nomeError ? "border-red-500 focus:ring-red-500" : "border-neutral-300 dark:border-slate-700 focus:ring-emerald-500"
+            }`}
+          />
+          {nomeError && <p className="mt-1.5 text-xs text-red-500 font-medium">{nomeError}</p>}
+        </div>
+
         <div>
           <label htmlFor="email" className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
             Email
@@ -84,14 +123,31 @@ export default function RightSide() {
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="Ex: bene17@gmail.com"
+            placeholder="lbene17@gmail.com"
             className={`w-full px-4 py-3.5 rounded-xl border bg-white dark:bg-slate-800 text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 transition-shadow shadow-sm ${
-              emailError
-                ? "border-red-500 focus:ring-red-500 dark:border-red-500"
-                : "border-neutral-300 dark:border-slate-700 focus:ring-emerald-500"
+              emailError ? "border-red-500 focus:ring-red-500" : "border-neutral-300 dark:border-slate-700 focus:ring-emerald-500"
             }`}
           />
           {emailError && <p className="mt-1.5 text-xs text-red-500 font-medium">{emailError}</p>}
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
+            Telefone
+          </label>
+          <div className={`flex rounded-xl border bg-white dark:bg-slate-800 shadow-sm overflow-hidden transition-shadow focus-within:ring-2 ${
+            telefoneError ? "border-red-500 focus-within:ring-red-500" : "border-neutral-300 dark:border-slate-700 focus-within:ring-emerald-500"
+          }`}>
+            <PhoneInput
+              international
+              defaultCountry="BR"
+              value={telefone}
+              onChange={setTelefone}
+              className="w-full px-4 py-3.5 text-neutral-900 dark:text-white bg-transparent focus:outline-none phone-input-custom"
+              placeholder="(34) 23456-7890"
+            />
+          </div>
+          {telefoneError && <p className="mt-1.5 text-xs text-red-500 font-medium">{telefoneError}</p>}
         </div>
 
         <div>
@@ -106,9 +162,7 @@ export default function RightSide() {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Ex: ••••••••••••"
               className={`w-full px-4 py-3.5 rounded-xl border bg-white dark:bg-slate-800 text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 transition-shadow shadow-sm ${
-                passwordError
-                  ? "border-red-500 focus:ring-red-500 dark:border-red-500"
-                  : "border-neutral-300 dark:border-slate-700 focus:ring-emerald-500"
+                passwordError ? "border-red-500 focus:ring-red-500" : "border-neutral-300 dark:border-slate-700 focus:ring-emerald-500"
               }`}
             />
             <button
@@ -122,26 +176,29 @@ export default function RightSide() {
           {passwordError && <p className="mt-1.5 text-xs text-red-500 font-medium">{passwordError}</p>}
         </div>
 
+        <div>
+          <label htmlFor="cpf" className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
+            CPF
+          </label>
+          <input
+            id="cpf"
+            type="text"
+            value={cpf}
+            onChange={(e) => setCpf(formatCpf(e.target.value))}
+            placeholder="091.000.000-00"
+            className={`w-full px-4 py-3.5 rounded-xl border bg-white dark:bg-slate-800 text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 transition-shadow shadow-sm ${
+              cpfError ? "border-red-500 focus:ring-red-500" : "border-neutral-300 dark:border-slate-700 focus:ring-emerald-500"
+            }`}
+          />
+          {cpfError && <p className="mt-1.5 text-xs text-red-500 font-medium">{cpfError}</p>}
+        </div>
+
         <button
           type="submit"
           className="w-full bg-[#004726] dark:bg-emerald-600 text-white py-3.5 px-4 rounded-xl font-bold text-base hover:bg-[#00331a] dark:hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-colors shadow-sm"
         >
-          Entrar
+          Cadastrar
         </button>
-
-        <div className="flex items-center justify-between text-sm">
-          <label className="flex items-center gap-2 cursor-pointer text-neutral-700 dark:text-neutral-300 font-medium select-none">
-            <input
-              type="checkbox"
-              defaultChecked
-              className="h-4 w-4 rounded border-neutral-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-emerald-600 focus:ring-emerald-500 accent-[#004726]"
-            />
-            Lembre de mim
-          </label>
-          <a href="#" className="font-semibold text-blue-600 dark:text-blue-400 hover:underline">
-            Esqueceu a senha?
-          </a>
-        </div>
       </form>
 
       <div className="w-full max-w-2xl mx-auto">
@@ -156,25 +213,11 @@ export default function RightSide() {
 
         <div className="grid grid-cols-3 gap-4">
           <button className="flex justify-center items-center py-3 px-4 border border-neutral-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 hover:bg-neutral-50 dark:hover:bg-slate-700 transition-all shadow-sm">
-            <Image
-              src="/google.png"
-              alt="Google"
-              width={20}
-              height={20}
-              className="object-contain"
-            />
+            <Image src="/google.png" alt="Google" width={20} height={20} className="object-contain" />
           </button>
-
           <button className="flex justify-center items-center py-3 px-4 border border-neutral-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 hover:bg-neutral-50 dark:hover:bg-slate-700 transition-all shadow-sm">
-            <Image
-              src="/facebook.png"
-              alt="Facebook"
-              width={20}
-              height={20}
-              className="object-contain"
-            />
+            <Image src="/facebook.png" alt="Facebook" width={20} height={20} className="object-contain" />
           </button>
-
           <button className="flex justify-center items-center py-3 px-4 border border-neutral-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 hover:bg-neutral-50 dark:hover:bg-slate-700 transition-all shadow-sm">
             <svg className="h-5 w-5 fill-black dark:fill-white transition-colors" viewBox="0 0 24 24">
               <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 4.17c.66-.81 1.11-1.93.99-3.06-1 .04-2.21.67-2.93 1.49-.62.69-1.16 1.84-1.01 2.96 1.12.09 2.27-.58 2.95-1.39z"/>

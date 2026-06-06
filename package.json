@@ -40,6 +40,7 @@
     "pdfkit": "^0.18.0",
     "pg": "^8.21.0",
     "pino": "^10.3.1",
+    "react-phone-number-input": "^3.4.17",
     "swagger-jsdoc": "^6.3.0",
     "swagger-ui-express": "^5.0.1",
     "tar": "^7.5.16",
