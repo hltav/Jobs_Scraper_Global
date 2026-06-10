@@ -1,16 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { login } from "@/services/authService"
-import { Image } from "@unpic/react"
-import { motion } from "framer-motion"
-import { ArrowLeft, Eye, EyeOff } from "lucide-react"
-import { FormEvent, useState } from "react"
-import { useState, FormEvent } from "react"
-import { Eye, EyeOff, ArrowLeft, Github, Linkedin } from "lucide-react"
-import { Image } from "@unpic/react"
-import { motion } from "framer-motion"
-import { useNavigate } from "react-router-dom"
-import { useAuth } from "@/context/AuthContext"
-import { api } from "@/services/api"
+import { login } from "@/services/authService";
+import { Image } from "@unpic/react";
+import { motion } from "framer-motion";
+import { ArrowLeft, Eye, EyeOff } from "lucide-react";
+import { FormEvent, useState } from "react";
 
 const STATIC_STARS = Array.from({ length: 40 }).map((_, i) => {
   const random = (min: number, max: number) => Math.random() * (max - min) + min;
@@ -54,142 +47,75 @@ function StarsBackground() {
 }
 
 export default function RightSide() {
-  const navigate = useNavigate();
-  const { login } = useAuth();
+  const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [emailError, setEmailError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [apiError, setApiError] = useState("");
 
-  const [showPassword, setShowPassword] = useState(false)
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [emailError, setEmailError] = useState("")
-  const [passwordError, setPasswordError] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
-  const [apiError, setApiError] = useState("")
-
-  const handleRevealPassword = () => setShowPassword((prev) => !prev)
-
-  const [globalError, setGlobalError] = useState("")
-  const [isSubmitting, setIsSubmitting] = useState(false)
-
-  const handleRevealPassword = () => setShowPassword((prev) => !prev)
-
-  async function handleOAuthLogin(provider: "google" | "github" | "linkedin") {
-    try {
-      setGlobalError("");
-      setIsSubmitting(true);
-
-      const response = await api.get(`/auth/${provider}/url`);
-
-      if (response.data?.url) {
-        window.location.href = response.data.url;
-      } else {
-        throw new Error("URL de redirecionamento não encontrada.");
-      }
-    } catch (error: unknown) {
-      console.error(`Erro ao iniciar OAuth com ${provider}:`, error);
-
-      let apiError = `Não foi possível conectar ao provedor de login com o ${provider}.`;
-
-      // Validação defensiva do erro do Axios
-      if (error && typeof error === "object" && "response" in error) {
-        const axiosError = error as { response?: { data?: { error?: string } } };
-        if (typeof axiosError.response?.data?.error === "string") {
-          apiError = axiosError.response.data.error;
-        }
-      }
-
-      setGlobalError(apiError);
-      setIsSubmitting(false);
-    }
-  }
+  const handleRevealPassword = () => setShowPassword((prev) => !prev);
 
   const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
-    setEmailError("")
-    setPasswordError("")
-    setApiError("")
-    setGlobalError("")
+    setEmailError("");
+    setPasswordError("");
+    setApiError("");
 
-    let isValid = true
+    let isValid = true;
 
     if (!email) {
-      setEmailError("O campo de e-mail é obrigatório.")
-      isValid = false
+      setEmailError("O campo de e-mail é obrigatório.");
+      isValid = false;
     } else {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(email)) {
-        setEmailError("Por favor, insira um e-mail válido.")
-        isValid = false
+        setEmailError("Por favor, insira um e-mail válido.");
+        isValid = false;
       }
     }
 
     if (!password) {
-      setPasswordError("O campo de senha é obrigatório.")
-      isValid = false
+      setPasswordError("O campo de senha é obrigatório.");
+      isValid = false;
     } else if (password.length < 6) {
-      setPasswordError("A senha precisa conter pelo menos 6 caracteres.")
-      isValid = false
+      setPasswordError("A senha precisa conter pelo menos 6 caracteres.");
+      isValid = false;
     }
 
     if (isValid) {
-      setIsLoading(true)
+      setIsLoading(true);
       try {
-        const result = await login({ email, password })
+        const result = await login({ email, password });
         
         if (result.token) {
-          localStorage.setItem("token", result.token)
+          localStorage.setItem("token", result.token);
         }
         
-        window.location.href = "/dashboard"
+        window.location.href = "/dashboard";
       } catch (error: any) {
-        setApiError(error.message || "Erro ao fazer login. Verifique suas credenciais.")
+        setApiError(error.message || "Erro ao fazer login. Verifique suas credenciais.");
       } finally {
-        setIsLoading(false)
+        setIsLoading(false);
       }
-    if (!isValid) return;
-
-    setIsSubmitting(true)
-
-    try {
-      await login({ email, password });
-      navigate("/app");
-    } catch (err: unknown) {
-      console.error(err);
-      let errorMessage = "Credenciais inválidas ou erro de conexão.";
-
-      // Validação defensiva do erro repassado pelo Contexto/Axios
-      if (err && typeof err === "object" && "response" in err) {
-        const axiosError = err as { response?: { data?: { error?: string } } };
-        if (typeof axiosError.response?.data?.error === "string") {
-          errorMessage = axiosError.response.data.error;
-        }
-      }
-
-      setGlobalError(errorMessage);
-    } finally {
-      setIsSubmitting(false)
     }
-  }
+  };
 
   return (
     <main className="relative flex w-full lg:w-1/2 flex-col justify-between px-6 py-10 sm:px-12 lg:px-16 xl:px-20 bg-white dark:bg-neutral-900 min-h-screen transition-colors duration-300 font-sans overflow-hidden">
-
       <div className="absolute inset-0 pointer-events-none w-full h-full opacity-40 dark:opacity-100">
         <div className="absolute top-[-10%] left-1/2 -translate-x-1/2 w-[600px] h-[500px] bg-gradient-to-br from-blue-500/10 via-purple-500/5 to-transparent blur-[100px] rounded-full" />
         <StarsBackground />
       </div>
-
       <div className="relative z-10 w-full max-w-2xl mx-auto flex flex-col items-center gap-8">
         <div className="w-full self-start">
-          <a
-            href="/"
-            className="inline-flex items-center gap-2 text-sm font-medium text-gray-500 dark:text-neutral-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors group"
-          >
+          <a href="/" className="inline-flex items-center gap-2 text-sm font-medium text-gray-500 dark:text-neutral-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors group">
             <ArrowLeft className="h-4 w-4 transform group-hover:-translate-x-1 transition-transform" />
             Voltar para a página principal
           </a>
         </div>
-
         <div className="text-center w-full">
           <h2 className="text-5xl sm:text-6xl font-extrabold tracking-tight text-gray-900 dark:text-white flex items-center justify-center gap-1 select-none">
             <span className="text-blue-500 font-light">&lt;</span>
@@ -204,19 +130,12 @@ export default function RightSide() {
           </p>
         </div>
       </div>
-
       <form className="relative z-10 space-y-6 w-full max-w-2xl mx-auto my-auto" onSubmit={handleSubmit}>
-        
         {apiError && (
           <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl">
             <p className="text-sm text-red-600 dark:text-red-400 text-center">{apiError}</p>
-
-        {globalError && (
-          <div className="p-3.5 bg-red-500/10 border border-red-500/30 text-red-500 rounded-xl text-sm font-semibold text-center backdrop-blur-sm">
-            {globalError}
           </div>
         )}
-
         <div>
           <label htmlFor="email" className="block text-sm font-semibold text-gray-700 dark:text-neutral-300 mb-1.5">
             Email
@@ -224,7 +143,6 @@ export default function RightSide() {
           <input
             id="email"
             type="email"
-            disabled={isSubmitting}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="Ex: bene17@gmail.com"
@@ -237,7 +155,6 @@ export default function RightSide() {
           />
           {emailError && <p className="mt-1.5 text-xs text-red-500 font-medium">{emailError}</p>}
         </div>
-
         <div>
           <label htmlFor="senha" className="block text-sm font-semibold text-gray-700 dark:text-neutral-300 mb-1.5">
             Senha
@@ -246,7 +163,6 @@ export default function RightSide() {
             <input
               id="senha"
               type={showPassword ? "text" : "password"}
-              disabled={isSubmitting}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Ex: ••••••••••••"
@@ -268,7 +184,6 @@ export default function RightSide() {
           </div>
           {passwordError && <p className="mt-1.5 text-xs text-red-500 font-medium">{passwordError}</p>}
         </div>
-
         <div className="flex items-center justify-between text-sm py-1">
           <label className="flex items-center gap-2 cursor-pointer text-gray-600 dark:text-neutral-400 font-medium select-none">
             <input
@@ -283,7 +198,6 @@ export default function RightSide() {
             Esqueceu a senha?
           </a>
         </div>
-
         <motion.button
           type="submit"
           disabled={isLoading}
@@ -292,15 +206,8 @@ export default function RightSide() {
           className="w-full bg-gradient-to-r from-blue-600 via-purple-600 to-teal-600 hover:opacity-95 text-white py-3.5 px-4 rounded-xl font-bold text-base focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all shadow-md shadow-blue-500/10 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isLoading ? "Entrando..." : "Entrar"}
-          disabled={isSubmitting}
-          whileHover={{ scale: isSubmitting ? 1 : 1.01 }}
-          whileTap={{ scale: isSubmitting ? 1 : 0.99 }}
-          className="w-full bg-gradient-to-r from-blue-600 via-purple-600 to-teal-600 hover:opacity-95 text-white py-3.5 px-4 rounded-xl font-bold text-base focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all shadow-md shadow-blue-500/10 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {isSubmitting ? "Entrando..." : "Entrar"}
         </motion.button>
       </form>
-
       <div className="relative z-10 w-full max-w-2xl mx-auto">
         <div className="relative mb-6">
           <div className="absolute inset-0 flex items-center">
@@ -310,55 +217,20 @@ export default function RightSide() {
             <span className="bg-white dark:bg-neutral-900 px-4 font-semibold tracking-wider">Ou faça login com</span>
           </div>
         </div>
-
         <div className="grid grid-cols-3 gap-4">
-          <button 
-            type="button"
-            disabled={isLoading}
-          <button
-            type="button"
-            disabled={isSubmitting}
-            onClick={() => handleOAuthLogin("google")}
-            className="flex justify-center items-center py-3 px-4 border border-gray-200 dark:border-neutral-800 rounded-xl bg-white/50 dark:bg-neutral-800/50 hover:bg-gray-50 dark:hover:bg-neutral-700/50 transition-all shadow-sm cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-          >
+          <button type="button" disabled={isLoading} className="flex justify-center items-center py-3 px-4 border border-gray-200 dark:border-neutral-800 rounded-xl bg-white/50 dark:bg-neutral-800/50 hover:bg-gray-50 dark:hover:bg-neutral-700/50 transition-all shadow-sm cursor-pointer disabled:opacity-50">
             <Image src="/google.png" alt="Google" width={20} height={20} className="object-contain" />
           </button>
-          <button 
-            type="button"
-            disabled={isLoading}
-            className="flex justify-center items-center py-3 px-4 border border-gray-200 dark:border-neutral-800 rounded-xl bg-white/50 dark:bg-neutral-800/50 hover:bg-gray-50 dark:hover:bg-neutral-700/50 transition-all shadow-sm cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-          >
+          <button type="button" disabled={isLoading} className="flex justify-center items-center py-3 px-4 border border-gray-200 dark:border-neutral-800 rounded-xl bg-white/50 dark:bg-neutral-800/50 hover:bg-gray-50 dark:hover:bg-neutral-700/50 transition-all shadow-sm cursor-pointer disabled:opacity-50">
             <Image src="/facebook.png" alt="Facebook" width={20} height={20} className="object-contain" />
           </button>
-          <button 
-            type="button"
-            disabled={isLoading}
-            className="flex justify-center items-center py-3 px-4 border border-gray-200 dark:border-neutral-800 rounded-xl bg-white/50 dark:bg-neutral-800/50 hover:bg-gray-50 dark:hover:bg-neutral-700/50 transition-all shadow-sm cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-          >
+          <button type="button" disabled={isLoading} className="flex justify-center items-center py-3 px-4 border border-gray-200 dark:border-neutral-800 rounded-xl bg-white/50 dark:bg-neutral-800/50 hover:bg-gray-50 dark:hover:bg-neutral-700/50 transition-all shadow-sm cursor-pointer disabled:opacity-50">
             <svg className="h-5 w-5 fill-gray-900 dark:fill-white transition-colors" viewBox="0 0 24 24">
               <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 4.17c.66-.81 1.11-1.93.99-3.06-1 .04-2.21.67-2.93 1.49-.62.69-1.16 1.84-1.01 2.96 1.12.09 2.27-.58 2.95-1.39z" />
             </svg>
-
-          <button
-            type="button"
-            disabled={isSubmitting}
-            onClick={() => handleOAuthLogin("linkedin")}
-            className="flex justify-center items-center py-3 px-4 border border-gray-200 dark:border-neutral-800 rounded-xl bg-white/50 dark:bg-neutral-800/50 hover:bg-gray-50 dark:hover:bg-neutral-700/50 transition-all shadow-sm cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <Linkedin className="h-5 text-blue-500"/>
-          </button>
-
-          <button
-            type="button"
-            disabled={isSubmitting}
-            onClick={() => handleOAuthLogin("github")}
-            className="flex justify-center items-center py-3 px-4 border border-gray-200 dark:border-neutral-800 rounded-xl bg-white/50 dark:bg-neutral-800/50 hover:bg-gray-50 dark:hover:bg-neutral-700/50 transition-all shadow-sm cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <Github className="h-5 text-gray-900 dark:text-white"/>
           </button>
         </div>
       </div>
-
     </main>
-  )
+  );
 }

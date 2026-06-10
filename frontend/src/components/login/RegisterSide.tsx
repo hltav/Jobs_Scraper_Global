@@ -1,20 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { register } from "@/services/authService"; // ← MUDE para register
-import { useState, FormEvent } from "react";
-import { Eye, EyeOff, ArrowLeft, Github, Linkedin } from "lucide-react";
+import { register } from "@/services/authService";
 import { Image } from "@unpic/react";
 import { motion } from "framer-motion";
 import { ArrowLeft, Eye, EyeOff } from "lucide-react";
 import { FormEvent, useState } from "react";
 import PhoneInput from "react-phone-number-input";
-
-import { api } from "@/services/api";
 import "react-phone-number-input/style.css";
-import { useNavigate } from "react-router-dom";
-
-interface ValidationError {
-  _errors?: string[];
-}
 
 const STATIC_STARS = Array.from({ length: 40 }).map((_, i) => {
   const random = (min: number, max: number) => Math.random() * (max - min) + min;
@@ -58,8 +49,6 @@ function StarsBackground() {
 }
 
 export default function RegisterSide() {
-  const navigate = useNavigate();
-
   const [showPassword, setShowPassword] = useState(false);
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
@@ -75,8 +64,6 @@ export default function RegisterSide() {
   
   const [isLoading, setIsLoading] = useState(false);
   const [apiError, setApiError] = useState("");
-  const [globalError, setGlobalError] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleRevealPassword = () => setShowPassword((prev) => !prev);
 
@@ -88,36 +75,6 @@ export default function RegisterSide() {
     return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6, 9)}-${digits.slice(9)}`;
   };
 
-  const handleOAuthLogin = async (provider: "google" | "github" | "linkedin") => {
-    try {
-      setGlobalError("");
-      setIsSubmitting(true);
-
-      const response = await api.get(`/auth/${provider}/url`);
-
-      if (response.data?.url) {
-        window.location.href = response.data.url;
-      } else {
-        throw new Error("URL de redirecionamento não retornada pelo servidor.");
-      }
-    } catch (error: unknown) {
-      console.error("Erro ao iniciar fluxo OAuth:", error);
-
-      let apiError = `Não foi possível conectar ao provedor ${provider}.`;
-
-      // Verifica de forma segura se o erro contém um objeto response vindo do Axios
-      if (error && typeof error === "object" && "response" in error) {
-        const axiosError = error as { response?: { data?: { error?: string } } };
-        if (typeof axiosError.response?.data?.error === "string") {
-          apiError = axiosError.response.data.error;
-        }
-      }
-
-      setGlobalError(apiError);
-      setIsSubmitting(false);
-    }
-  };
-
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setNomeError("");
@@ -126,7 +83,6 @@ export default function RegisterSide() {
     setPasswordError("");
     setCpfError("");
     setApiError("");
-    setGlobalError("");
 
     let isValid = true;
 
@@ -167,91 +123,34 @@ export default function RegisterSide() {
     if (isValid) {
       setIsLoading(true);
       try {
-        const result = await register({
+        await register({
           email: email,
           password: password,
           name: nome,
         });
-        console.log("Cadastro bem sucedido:", result);
         window.location.href = "/login?registered=true";
       } catch (error: any) {
         console.error("Erro no cadastro:", error);
         setApiError(error.message || "Erro ao cadastrar. Tente novamente.");
       } finally {
         setIsLoading(false);
-    if (!isValid) return;
-
-    setIsSubmitting(true);
-
-    try {
-      const response = await api.post("/auth/register", {
-        name: nome,
-        email: email,
-        phone: telefone,
-        password: password,
-        cpf: cpf.replace(/\D/g, ""),
-      });
-
-      console.log("Cadastro efetuado com sucesso!", response.data);
-      navigate("/app");
-
-    } catch (error: unknown) {
-      console.error("Erro na requisição de cadastro:", error);
-      setIsSubmitting(false);
-
-      if (error && typeof error === "object" && "response" in error) {
-        const axiosError = error as {
-          response?: {
-            data?: {
-              error?: string | Record<string, ValidationError>;
-              message?: string;
-            };
-          };
-        };
-
-        const data = axiosError.response?.data;
-
-        if (data && typeof data.error === "object") {
-          const validationErrors = data.error as Record<string, ValidationError>;
-
-          if (validationErrors.name?._errors?.[0]) setNomeError(validationErrors.name._errors[0]);
-          if (validationErrors.email?._errors?.[0]) setEmailError(validationErrors.email._errors[0]);
-          if (validationErrors.phone?._errors?.[0]) setTelefoneError(validationErrors.phone._errors[0]);
-          if (validationErrors.password?._errors?.[0]) setPasswordError(validationErrors.password._errors[0]);
-          if (validationErrors.cpf?._errors?.[0]) setCpfError(validationErrors.cpf._errors[0]);
-        } else {
-          const fallbackMsg = data?.message || (typeof data?.error === "string" ? data.error : "") || "Erro ao efetuar o cadastro.";
-          if (fallbackMsg.toLowerCase().includes("email")) {
-            setEmailError("Este endereço de e-mail já está em uso.");
-          } else {
-            setGlobalError(fallbackMsg);
-          }
-        }
-      } else {
-        setGlobalError("Ocorreu um erro inesperado de conexão.");
       }
     }
   };
 
   return (
     <main className="relative flex w-full lg:w-1/2 flex-col justify-between px-6 py-10 sm:px-12 lg:px-16 xl:px-20 bg-white dark:bg-neutral-900 min-h-screen transition-colors duration-300 font-sans overflow-hidden">
-
       <div className="absolute inset-0 pointer-events-none w-full h-full opacity-40 dark:opacity-100">
         <div className="absolute top-[-10%] left-1/2 -translate-x-1/2 w-[600px] h-[500px] bg-gradient-to-br from-blue-500/10 via-purple-500/5 to-transparent blur-[100px] rounded-full" />
         <StarsBackground />
       </div>
-
       <div className="relative z-10 w-full max-w-2xl mx-auto flex flex-col items-center gap-8">
         <div className="w-full self-start">
-          <a
-            href="/login"
-            className="inline-flex items-center gap-2 text-sm font-medium text-gray-500 dark:text-neutral-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors group"
-          >
+          <a href="/login" className="inline-flex items-center gap-2 text-sm font-medium text-gray-500 dark:text-neutral-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors group">
             <ArrowLeft className="h-4 w-4 transform group-hover:-translate-x-1 transition-transform" />
             Voltar para o login
           </a>
         </div>
-
         <div className="text-center w-full">
           <h2 className="text-5xl sm:text-6xl font-extrabold tracking-tight text-gray-900 dark:text-white flex items-center justify-center gap-1 select-none">
             <span className="text-blue-500 font-light">&lt;</span>
@@ -266,143 +165,48 @@ export default function RegisterSide() {
           </p>
         </div>
       </div>
-
       <form className="relative z-10 space-y-5 w-full max-w-2xl mx-auto my-8" onSubmit={handleSubmit}>
-
         {apiError && (
           <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl">
             <p className="text-sm text-red-600 dark:text-red-400 text-center">{apiError}</p>
-        {globalError && (
-          <div className="p-3.5 bg-red-500/10 border border-red-500/30 text-red-500 rounded-xl text-sm font-semibold text-center backdrop-blur-sm">
-            {globalError}
           </div>
         )}
-
         <div>
-          <label htmlFor="nome" className="block text-sm font-semibold text-gray-700 dark:text-neutral-300 mb-1.5">
-            Nome
-          </label>
-          <input
-            id="nome"
-            type="text"
-            disabled={isSubmitting}
-            value={nome}
-            onChange={(e) => setNome(e.target.value)}
-            placeholder="benevanio"
-            disabled={isLoading}
-            className={`w-full px-4 py-3.5 rounded-xl border bg-white/80 dark:bg-neutral-800/80 backdrop-blur-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 transition-all shadow-sm ${
-              nomeError ? "border-red-500 focus:ring-red-500" : "border-gray-200 dark:border-neutral-700 focus:ring-blue-500 focus:border-transparent"
-            } ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
-          />
+          <label htmlFor="nome" className="block text-sm font-semibold text-gray-700 dark:text-neutral-300 mb-1.5">Nome</label>
+          <input id="nome" type="text" value={nome} onChange={(e) => setNome(e.target.value)} placeholder="benevanio" disabled={isLoading} className={`w-full px-4 py-3.5 rounded-xl border bg-white/80 dark:bg-neutral-800/80 backdrop-blur-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 transition-all shadow-sm ${nomeError ? "border-red-500 focus:ring-red-500" : "border-gray-200 dark:border-neutral-700 focus:ring-blue-500 focus:border-transparent"} ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`} />
           {nomeError && <p className="mt-1.5 text-xs text-red-500 font-medium">{nomeError}</p>}
         </div>
-
         <div>
-          <label htmlFor="email" className="block text-sm font-semibold text-gray-700 dark:text-neutral-300 mb-1.5">
-            Email
-          </label>
-          <input
-            id="email"
-            type="email"
-            disabled={isSubmitting}
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="benevanio@dev.com.br"
-            disabled={isLoading}
-            className={`w-full px-4 py-3.5 rounded-xl border bg-white/80 dark:bg-neutral-800/80 backdrop-blur-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 transition-all shadow-sm ${
-              emailError ? "border-red-500 focus:ring-red-500" : "border-gray-200 dark:border-neutral-700 focus:ring-blue-500 focus:border-transparent"
-            } ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
-          />
+          <label htmlFor="email" className="block text-sm font-semibold text-gray-700 dark:text-neutral-300 mb-1.5">Email</label>
+          <input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="benevanio@dev.com.br" disabled={isLoading} className={`w-full px-4 py-3.5 rounded-xl border bg-white/80 dark:bg-neutral-800/80 backdrop-blur-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 transition-all shadow-sm ${emailError ? "border-red-500 focus:ring-red-500" : "border-gray-200 dark:border-neutral-700 focus:ring-blue-500 focus:border-transparent"} ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`} />
           {emailError && <p className="mt-1.5 text-xs text-red-500 font-medium">{emailError}</p>}
         </div>
-
         <div>
-          <label className="block text-sm font-semibold text-gray-700 dark:text-neutral-300 mb-1.5">
-            Telefone
-          </label>
-          <div className={`flex rounded-xl border bg-white/80 dark:bg-neutral-800/80 backdrop-blur-sm shadow-sm overflow-hidden transition-all focus-within:ring-2 ${
-            telefoneError ? "border-red-500 focus-within:ring-red-500" : "border-gray-200 dark:border-neutral-700 focus-within:ring-blue-500"
-          } ${isLoading ? "opacity-50" : ""}`}>
-            <PhoneInput
-              international
-              defaultCountry="BR"
-              disabled={isSubmitting}
-              value={telefone}
-              onChange={setTelefone}
-              disabled={isLoading}
-              className="w-full px-4 py-3.5 text-gray-900 dark:text-white bg-transparent focus:outline-none phone-input-custom"
-              placeholder="(34) 23456-7890"
-            />
+          <label className="block text-sm font-semibold text-gray-700 dark:text-neutral-300 mb-1.5">Telefone</label>
+          <div className={`flex rounded-xl border bg-white/80 dark:bg-neutral-800/80 backdrop-blur-sm shadow-sm overflow-hidden transition-all focus-within:ring-2 ${telefoneError ? "border-red-500 focus-within:ring-red-500" : "border-gray-200 dark:border-neutral-700 focus-within:ring-blue-500"} ${isLoading ? "opacity-50" : ""}`}>
+            <PhoneInput international defaultCountry="BR" value={telefone} onChange={setTelefone} disabled={isLoading} className="w-full px-4 py-3.5 text-gray-900 dark:text-white bg-transparent focus:outline-none phone-input-custom" placeholder="(34) 23456-7890" />
           </div>
           {telefoneError && <p className="mt-1.5 text-xs text-red-500 font-medium">{telefoneError}</p>}
         </div>
-
         <div>
-          <label htmlFor="senha" className="block text-sm font-semibold text-gray-700 dark:text-neutral-300 mb-1.5">
-            Senha
-          </label>
+          <label htmlFor="senha" className="block text-sm font-semibold text-gray-700 dark:text-neutral-300 mb-1.5">Senha</label>
           <div className="relative">
-            <input
-              id="senha"
-              type={showPassword ? "text" : "password"}
-              disabled={isSubmitting}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Ex: ••••••••••••"
-              disabled={isLoading}
-              className={`w-full px-4 py-3.5 rounded-xl border bg-white/80 dark:bg-neutral-800/80 backdrop-blur-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 transition-all shadow-sm ${
-                passwordError ? "border-red-500 focus:ring-red-500" : "border-gray-200 dark:border-neutral-700 focus:ring-blue-500 focus:border-transparent"
-              } ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
-            />
-            <button
-              type="button"
-              disabled={isSubmitting}
-              onClick={handleRevealPassword}
-              disabled={isLoading}
-              className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 dark:text-neutral-500 hover:text-blue-500 dark:hover:text-blue-400 transition-colors"
-            >
+            <input id="senha" type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Ex: ••••••••••••" disabled={isLoading} className={`w-full px-4 py-3.5 rounded-xl border bg-white/80 dark:bg-neutral-800/80 backdrop-blur-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 transition-all shadow-sm ${passwordError ? "border-red-500 focus:ring-red-500" : "border-gray-200 dark:border-neutral-700 focus:ring-blue-500 focus:border-transparent"} ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`} />
+            <button type="button" onClick={handleRevealPassword} disabled={isLoading} className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 dark:text-neutral-500 hover:text-blue-500 dark:hover:text-blue-400 transition-colors">
               {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
             </button>
           </div>
           {passwordError && <p className="mt-1.5 text-xs text-red-500 font-medium">{passwordError}</p>}
         </div>
-
         <div>
-          <label htmlFor="cpf" className="block text-sm font-semibold text-gray-700 dark:text-neutral-300 mb-1.5">
-            CPF <span className="text-gray-400 dark:text-neutral-500 text-xs font-normal">(opcional)</span>
-          </label>
-          <input
-            id="cpf"
-            type="text"
-            disabled={isSubmitting}
-            value={cpf}
-            onChange={(e) => setCpf(formatCpf(e.target.value))}
-            placeholder="091.000.000-00"
-            disabled={isLoading}
-            className={`w-full px-4 py-3.5 rounded-xl border bg-white/80 dark:bg-neutral-800/80 backdrop-blur-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 transition-all shadow-sm ${
-              cpfError ? "border-red-500 focus:ring-red-500" : "border-gray-200 dark:border-neutral-700 focus:ring-blue-500 focus:border-transparent"
-            } ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
-          />
+          <label htmlFor="cpf" className="block text-sm font-semibold text-gray-700 dark:text-neutral-300 mb-1.5">CPF <span className="text-gray-400 dark:text-neutral-500 text-xs font-normal">(opcional)</span></label>
+          <input id="cpf" type="text" value={cpf} onChange={(e) => setCpf(formatCpf(e.target.value))} placeholder="091.000.000-00" disabled={isLoading} className={`w-full px-4 py-3.5 rounded-xl border bg-white/80 dark:bg-neutral-800/80 backdrop-blur-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 transition-all shadow-sm ${cpfError ? "border-red-500 focus:ring-red-500" : "border-gray-200 dark:border-neutral-700 focus:ring-blue-500 focus:border-transparent"} ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`} />
           {cpfError && <p className="mt-1.5 text-xs text-red-500 font-medium">{cpfError}</p>}
         </div>
-
-        <motion.button
-          type="submit"
-          disabled={isLoading}
-          whileHover={{ scale: isLoading ? 1 : 1.01 }}
-          whileTap={{ scale: isLoading ? 1 : 0.99 }}
-          className="w-full bg-gradient-to-r from-blue-600 via-purple-600 to-teal-600 hover:opacity-95 text-white py-3.5 px-4 rounded-xl font-bold text-base focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all shadow-md shadow-blue-500/10 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-        >
+        <motion.button type="submit" disabled={isLoading} whileHover={{ scale: isLoading ? 1 : 1.01 }} whileTap={{ scale: isLoading ? 1 : 0.99 }} className="w-full bg-gradient-to-r from-blue-600 via-purple-600 to-teal-600 hover:opacity-95 text-white py-3.5 px-4 rounded-xl font-bold text-base focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all shadow-md shadow-blue-500/10 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
           {isLoading ? "Cadastrando..." : "Cadastrar"}
-          disabled={isSubmitting}
-          whileHover={{ scale: isSubmitting ? 1 : 1.01 }}
-          whileTap={{ scale: isSubmitting ? 1 : 0.99 }}
-          className="w-full bg-gradient-to-r from-blue-600 via-purple-600 to-teal-600 hover:opacity-95 text-white py-3.5 px-4 rounded-xl font-bold text-base focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all shadow-md shadow-blue-500/10 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {isSubmitting ? "Cadastrando..." : "Cadastrar"}
         </motion.button>
       </form>
-
       <div className="relative z-10 w-full max-w-2xl mx-auto">
         <div className="relative mb-6">
           <div className="absolute inset-0 flex items-center">
@@ -412,7 +216,6 @@ export default function RegisterSide() {
             <span className="bg-white dark:bg-neutral-900 px-4 font-semibold tracking-wider">Ou cadastre-se com</span>
           </div>
         </div>
-
         <div className="grid grid-cols-3 gap-4">
           <button type="button" disabled={isLoading} className="flex justify-center items-center py-3 px-4 border border-gray-200 dark:border-neutral-800 rounded-xl bg-white/50 dark:bg-neutral-800/50 hover:bg-gray-50 dark:hover:bg-neutral-700/50 transition-all shadow-sm cursor-pointer disabled:opacity-50">
             <Image src="/google.png" alt="Google" width={20} height={20} className="object-contain" />
@@ -422,37 +225,11 @@ export default function RegisterSide() {
           </button>
           <button type="button" disabled={isLoading} className="flex justify-center items-center py-3 px-4 border border-gray-200 dark:border-neutral-800 rounded-xl bg-white/50 dark:bg-neutral-800/50 hover:bg-gray-50 dark:hover:bg-neutral-700/50 transition-all shadow-sm cursor-pointer disabled:opacity-50">
             <svg className="h-5 w-5 fill-gray-900 dark:fill-white transition-colors" viewBox="0 0 24 24">
-              <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 4.17c.66-.81 1.11-1.93.99-3.06-1 .04-2.21.67-2.93 1.49-.62.69-1.16 1.84-1.01 2.96 1.12.09 2.27-.58 2.95-1.39z"/>
+              <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 4.17c.66-.81 1.11-1.93.99-3.06-1 .04-2.21.67-2.93 1.49-.62.69-1.16 1.84-1.01 2.96 1.12.09 2.27-.58 2.95-1.39z" />
             </svg>
-          <button
-            type="button"
-            disabled={isSubmitting}
-            onClick={() => handleOAuthLogin("google")}
-            className="flex justify-center items-center py-3 px-4 border border-gray-200 dark:border-neutral-800 rounded-xl bg-white/50 dark:bg-neutral-800/50 hover:bg-gray-50 dark:hover:bg-neutral-700/50 transition-all shadow-sm cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <Image src="/google.png" alt="Google" width={20} height={20} className="object-contain" />
-          </button>
-
-          <button
-            type="button"
-            disabled={isSubmitting}
-            onClick={() => handleOAuthLogin("linkedin")}
-            className="flex justify-center items-center py-3 px-4 border border-gray-200 dark:border-neutral-800 rounded-xl bg-white/50 dark:bg-neutral-800/50 hover:bg-gray-50 dark:hover:bg-neutral-700/50 transition-all shadow-sm cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <Linkedin className="h-5 text-blue-500" />
-          </button>
-
-          <button
-            type="button"
-            disabled={isSubmitting}
-            onClick={() => handleOAuthLogin("github")}
-            className="flex justify-center items-center py-3 px-4 border border-gray-200 dark:border-neutral-800 rounded-xl bg-white/50 dark:bg-neutral-800/50 hover:bg-gray-50 dark:hover:bg-neutral-700/50 transition-all shadow-sm cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <Github className="h-5 text-gray-900 dark:text-white" />
           </button>
         </div>
       </div>
-
     </main>
   );
 }
