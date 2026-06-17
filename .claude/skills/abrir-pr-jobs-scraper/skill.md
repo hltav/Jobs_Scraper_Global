@@ -130,7 +130,14 @@ Mostrar tudo formatado e perguntar: **"O PR esta correto? Confirma a criacao? (s
 
 ### Passo 8: Criar o PR
 
-1. Criar o PR via GitHub CLI:
+1. Verificar se a branch foi enviada ao remote:
+   ```bash
+   git ls-remote --heads origin $(git branch --show-current)
+   ```
+   - **Se a branch nao existe no remote:** perguntar ao usuario: "A branch ainda nao foi enviada ao remote. Deseja fazer push agora? (s/n)"
+   - Se confirmar, rodar: `git push -u origin $(git branch --show-current)`
+   - Se negar, parar a execucao
+2. Criar o PR via GitHub CLI:
    ```bash
    gh pr create \
      --repo Benevanio/Jobs_Scraper_Global \
@@ -138,7 +145,7 @@ Mostrar tudo formatado e perguntar: **"O PR esta correto? Confirma a criacao? (s
      --title "PAV-XX: <titulo>" \
      --body "<body completo>"
    ```
-2. Confirmar ao usuario com o link do PR criado
+3. Confirmar ao usuario com o link do PR criado
 
 ## Erros comuns
 

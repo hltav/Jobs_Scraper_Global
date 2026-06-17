@@ -108,5 +108,5 @@ O PR e sempre criado contra o repositorio `Benevanio/Jobs_Scraper_Global` na bra
 - **Deteccao de task:** Tenta extrair PAV-XX da branch, mas sempre confirma com o usuario. Se a branch nao e sugestiva, pergunta diretamente.
 - **Descricao automatica:** Resumo em linguagem natural gerado pelo Claude a partir dos commits/diffs — texto curto focado no que foi desenvolvido e como se relaciona com a task.
 - **Testes:** Roda backend e frontend automaticamente, preenche o campo, mas usuario pode editar no preview.
-- **Sem scripts auxiliares:** Toda a logica e executada pelo Claude usando ferramentas disponvieis (MCP, Bash).
+- **Sem scripts auxiliares:** Toda a logica e executada pelo Claude usando ferramentas disponiveis (MCP, Bash).
 - **Target fixo:** Sempre `Benevanio/Jobs_Scraper_Global` branch `develop`.
